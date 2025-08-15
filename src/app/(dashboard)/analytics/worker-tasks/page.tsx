@@ -1,15 +1,45 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Download, Search, Calendar, TrendingUp, Users, CheckCircle, Star } from "lucide-react";
-import { useWorkerTasksAnalytics, useExportWorkerTasksData } from "@/hooks/use-analytics";
+import {
+  Download,
+  Search,
+  Calendar,
+  TrendingUp,
+  Users,
+  CheckCircle,
+  Star,
+} from "lucide-react";
+import {
+  useWorkerTasksAnalytics,
+  useExportWorkerTasksData,
+} from "@/hooks/use-analytics";
 import { GetWorkerTasksParams } from "@/services/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -28,27 +58,29 @@ export default function WorkerTasksAnalyticsPage() {
   const exportMutation = useExportWorkerTasksData();
 
   const handleSearch = () => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       worker_id: searchWorkerId || undefined,
       date_from: dateFrom || undefined,
       date_to: dateTo || undefined,
-      page: 1
+      page: 1,
     }));
   };
 
   const handlePageChange = (page: number) => {
-    setFilters(prev => ({ ...prev, page }));
+    setFilters((prev) => ({ ...prev, page }));
   };
 
   const handleExport = async () => {
     try {
       const blob = await exportMutation.mutateAsync(filters);
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
+      const a = document.createElement("a");
+      a.style.display = "none";
       a.href = url;
-      a.download = `worker-tasks-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+      a.download = `worker-tasks-analytics-${
+        new Date().toISOString().split("T")[0]
+      }.csv`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -68,7 +100,9 @@ export default function WorkerTasksAnalyticsPage() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Worker Tasks Analytics</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Worker Tasks Analytics
+          </h1>
         </div>
         <Alert variant="destructive">
           <AlertDescription>
@@ -82,7 +116,9 @@ export default function WorkerTasksAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Worker Tasks Analytics</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Worker Tasks Analytics
+        </h1>
         <Button onClick={handleExport} disabled={exportMutation.isPending}>
           <Download className="mr-2 h-4 w-4" />
           {exportMutation.isPending ? "Exporting..." : "Export Data"}
@@ -116,14 +152,19 @@ export default function WorkerTasksAnalyticsPage() {
               {isLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
-                data?.data?.stats?.reduce((sum, worker) => sum + worker.total_tasks, 0) || 0
+                data?.data?.stats?.reduce(
+                  (sum, worker) => sum + worker.total_tasks,
+                  0
+                ) || 0
               )}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Earnings
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -131,7 +172,12 @@ export default function WorkerTasksAnalyticsPage() {
               {isLoading ? (
                 <Skeleton className="h-8 w-20" />
               ) : (
-                `$${(data?.data?.stats?.reduce((sum, worker) => sum + worker.total_earnings, 0) || 0).toLocaleString()}`
+                `$${(
+                  data?.data?.stats?.reduce(
+                    (sum, worker) => sum + worker.total_earnings,
+                    0
+                  ) || 0
+                ).toLocaleString()}`
               )}
             </div>
           </CardContent>
@@ -146,7 +192,13 @@ export default function WorkerTasksAnalyticsPage() {
               {isLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
-                (data?.data?.stats?.reduce((sum, worker) => sum + worker.average_rating, 0) / (data?.data?.stats?.length || 1) || 0).toFixed(1)
+                (data?.data?.stats && data.data.stats.length > 0
+                  ? data.data.stats.reduce(
+                      (sum, worker) => sum + worker.average_rating,
+                      0
+                    ) / data.data.stats.length
+                  : 0
+                ).toFixed(1)
               )}
             </div>
           </CardContent>
@@ -229,19 +281,29 @@ export default function WorkerTasksAnalyticsPage() {
                     <TableRow key={worker.worker_id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{worker.worker_name}</div>
-                          <div className="text-sm text-muted-foreground">ID: {worker.worker_id}</div>
+                          <div className="font-medium">
+                            {worker.worker_name}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            ID: {worker.worker_id}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>{worker.total_tasks}</TableCell>
                       <TableCell>{worker.completed_tasks}</TableCell>
                       <TableCell>{worker.pending_tasks}</TableCell>
                       <TableCell>
-                        <Badge className={getCompletionRateColor(worker.completion_rate)}>
+                        <Badge
+                          className={getCompletionRateColor(
+                            worker.completion_rate
+                          )}
+                        >
                           {worker.completion_rate.toFixed(1)}%
                         </Badge>
                       </TableCell>
-                      <TableCell>${worker.total_earnings.toLocaleString()}</TableCell>
+                      <TableCell>
+                        ${worker.total_earnings.toLocaleString()}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center">
                           <Star className="h-4 w-4 text-yellow-400 mr-1" />
@@ -263,15 +325,25 @@ export default function WorkerTasksAnalyticsPage() {
               {data?.data?.pagination && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-muted-foreground">
-                    Showing {((data.data.pagination.currentPage - 1) * data.data.pagination.limit) + 1} to{" "}
-                    {Math.min(data.data.pagination.currentPage * data.data.pagination.limit, data.data.pagination.total)} of{" "}
-                    {data.data.pagination.total} results
+                    Showing{" "}
+                    {(data.data.pagination.currentPage - 1) *
+                      data.data.pagination.limit +
+                      1}{" "}
+                    to{" "}
+                    {Math.min(
+                      data.data.pagination.currentPage *
+                        data.data.pagination.limit,
+                      data.data.pagination.total
+                    )}{" "}
+                    of {data.data.pagination.total} results
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handlePageChange(data.data.pagination.currentPage - 1)}
+                      onClick={() =>
+                        handlePageChange(data.data.pagination.currentPage - 1)
+                      }
                       disabled={!data.data.pagination.hasPrevPage}
                     >
                       Previous
@@ -279,7 +351,9 @@ export default function WorkerTasksAnalyticsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handlePageChange(data.data.pagination.currentPage + 1)}
+                      onClick={() =>
+                        handlePageChange(data.data.pagination.currentPage + 1)
+                      }
                       disabled={!data.data.pagination.hasNextPage}
                     >
                       Next
