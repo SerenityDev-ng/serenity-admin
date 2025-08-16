@@ -137,7 +137,7 @@ export default function WorkerTasksAnalyticsPage() {
               {isLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
-                data?.data?.stats?.length || 0
+                data?.data?.summary?.totalWorkers || 0
               )}
             </div>
           </CardContent>
@@ -152,10 +152,7 @@ export default function WorkerTasksAnalyticsPage() {
               {isLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
-                data?.data?.stats?.reduce(
-                  (sum, worker) => sum + worker.total_tasks,
-                  0
-                ) || 0
+                data?.data?.summary?.totalTasksCompleted || 0
               )}
             </div>
           </CardContent>
@@ -173,8 +170,8 @@ export default function WorkerTasksAnalyticsPage() {
                 <Skeleton className="h-8 w-20" />
               ) : (
                 `$${(
-                  data?.data?.stats?.reduce(
-                    (sum, worker) => sum + worker.total_earnings,
+                  data?.data?.workers?.reduce(
+                    (sum, worker) => sum + worker.lifetimeEarnings,
                     0
                   ) || 0
                 ).toLocaleString()}`
@@ -192,11 +189,11 @@ export default function WorkerTasksAnalyticsPage() {
               {isLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
-                (data?.data?.stats && data.data.stats.length > 0
-                  ? data.data.stats.reduce(
-                      (sum, worker) => sum + worker.average_rating,
+                (data?.data?.workers && data.data.workers.length > 0
+                  ? data.data.workers.reduce(
+                      (sum, worker) => sum + worker.averageRating,
                       0
-                    ) / data.data.stats.length
+                    ) / data.data.workers.length
                   : 0
                 ).toFixed(1)
               )}
@@ -277,37 +274,40 @@ export default function WorkerTasksAnalyticsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data?.data?.stats?.map((worker) => (
-                    <TableRow key={worker.worker_id}>
+                  {data?.data?.workers?.map((worker) => (
+                    <TableRow key={worker._id}>
                       <TableCell>
                         <div>
                           <div className="font-medium">
-                            {worker.worker_name}
+                            {worker.full_name}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            ID: {worker.worker_id}
+                            ID: {worker._id}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Skill: {worker.skill}
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{worker.total_tasks}</TableCell>
-                      <TableCell>{worker.completed_tasks}</TableCell>
-                      <TableCell>{worker.pending_tasks}</TableCell>
+                      <TableCell>{worker.totalJobs}</TableCell>
+                      <TableCell>{worker.completedJobs}</TableCell>
+                      <TableCell>{worker.totalJobs - worker.completedJobs}</TableCell>
                       <TableCell>
                         <Badge
                           className={getCompletionRateColor(
-                            worker.completion_rate
+                            worker.completionRate
                           )}
                         >
-                          {worker.completion_rate.toFixed(1)}%
+                          {worker.completionRate.toFixed(1)}%
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        ${worker.total_earnings.toLocaleString()}
+                        ${worker.lifetimeEarnings.toLocaleString()}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center">
                           <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                          {worker.average_rating.toFixed(1)}
+                          {worker.averageRating.toFixed(1)}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -333,9 +333,9 @@ export default function WorkerTasksAnalyticsPage() {
                     {Math.min(
                       data.data.pagination.currentPage *
                         data.data.pagination.limit,
-                      data.data.pagination.total
+                      data.data.pagination.totalWorkers
                     )}{" "}
-                    of {data.data.pagination.total} results
+                    of {data.data.pagination.totalWorkers} results
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button

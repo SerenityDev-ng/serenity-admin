@@ -1,16 +1,15 @@
 import api from "@/lib/axios";
 import { AxiosError } from "axios";
 
-export interface WorkerTaskStats {
-  worker_id: string;
-  worker_name: string;
-  total_tasks: number;
-  completed_tasks: number;
-  pending_tasks: number;
-  cancelled_tasks: number;
-  total_earnings: number;
-  average_rating: number;
-  completion_rate: number;
+export interface Worker {
+  _id: string;
+  full_name: string;
+  skill: string;
+  totalJobs: number;
+  completedJobs: number;
+  lifetimeEarnings: number;
+  averageRating: number;
+  completionRate: number;
 }
 
 export interface MonthlyTaskStats {
@@ -35,14 +34,18 @@ export interface PeriodicTaskStats {
 export interface WorkerTasksResponse {
   message: string;
   data: {
-    stats: WorkerTaskStats[];
+    workers: Worker[];
+    summary: {
+      totalWorkers: number;
+      totalTasksCompleted: number;
+    };
     pagination: {
       currentPage: number;
       totalPages: number;
       hasNextPage: boolean;
       hasPrevPage: boolean;
       limit: number;
-      total: number;
+      totalWorkers: number;
     };
   };
 }
