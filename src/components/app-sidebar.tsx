@@ -24,9 +24,13 @@ import {
   Shield,
   TrendingUp,
   Clock,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/auth";
+import { toast } from "sonner";
 
 const menuItems = [
   {
@@ -123,6 +127,18 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const logout = () => {
+    // Clear auth state
+    clearAuth();
+
+    // Show success message
+    toast.success("Logged out successfully!");
+
+    // Redirect to auth
+    router.push("/auth");
+  };
 
   return (
     <Sidebar>
@@ -183,6 +199,16 @@ export function AppSidebar() {
         })}
       </SidebarContent>
       <SidebarFooter>
+        <div className="p-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={logout}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
         <div className="px-4 py-2 text-xs text-muted-foreground">
           © 2024 Serenity Platform
         </div>

@@ -2,11 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Shield, Loader2 } from "lucide-react";
 import { SignupCredentials } from "@/services/auth";
 import { useSignup } from "@/hooks/use-auth";
@@ -30,12 +42,12 @@ export default function SignupPage() {
 
   // Redirect if already authenticated
   if (isAuthenticated) {
-    router.push("/dashboard");
+    router.push("/");
     return null;
   }
 
   const handleInputChange = (field: keyof SignupCredentials, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,12 +62,17 @@ export default function SignupPage() {
 
     // Validate required fields
     const requiredFields: (keyof SignupCredentials)[] = [
-      "first_name", "last_name", "email", "phone_number", "sex", "password"
+      "first_name",
+      "last_name",
+      "email",
+      "phone_number",
+      "sex",
+      "password",
     ];
-    
+
     for (const field of requiredFields) {
       if (!formData[field].trim()) {
-        setError(`${field.replace('_', ' ')} is required`);
+        setError(`${field.replace("_", " ")} is required`);
         return;
       }
     }
@@ -83,7 +100,7 @@ export default function SignupPage() {
             Create a new admin account
           </p>
         </div>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Sign Up</CardTitle>
@@ -98,7 +115,7 @@ export default function SignupPage() {
                   {error}
                 </div>
               )}
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="first_name">First Name</Label>
@@ -107,7 +124,9 @@ export default function SignupPage() {
                     type="text"
                     placeholder="John"
                     value={formData.first_name}
-                    onChange={(e) => handleInputChange("first_name", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("first_name", e.target.value)
+                    }
                     required
                     disabled={isPending}
                   />
@@ -119,7 +138,9 @@ export default function SignupPage() {
                     type="text"
                     placeholder="Doe"
                     value={formData.last_name}
-                    onChange={(e) => handleInputChange("last_name", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("last_name", e.target.value)
+                    }
                     required
                     disabled={isPending}
                   />
@@ -146,7 +167,9 @@ export default function SignupPage() {
                   type="tel"
                   placeholder="+234801234567"
                   value={formData.phone_number}
-                  onChange={(e) => handleInputChange("phone_number", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("phone_number", e.target.value)
+                  }
                   required
                   disabled={isPending}
                 />
@@ -177,7 +200,9 @@ export default function SignupPage() {
                   type="password"
                   placeholder="Enter your password"
                   value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   required
                   disabled={isPending}
                 />
@@ -206,7 +231,7 @@ export default function SignupPage() {
                   "Create Account"
                 )}
               </Button>
-              
+
               <div className="text-center">
                 <p className="text-sm text-gray-600">
                   Already have an account?{" "}
@@ -218,7 +243,7 @@ export default function SignupPage() {
             </form>
           </CardContent>
         </Card>
-        
+
         <div className="text-center text-xs text-gray-500">
           © 2024 Serenity Platform. All rights reserved.
         </div>

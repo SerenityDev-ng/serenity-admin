@@ -1,5 +1,6 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { Separator } from "@/components/ui/separator";
 
 export default function DashboardLayout({
   children,
@@ -8,12 +9,17 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full">
-        <AppSidebar />
-        <main className="flex-1 overflow-auto p-6">
+      <AppSidebar />
+      <SidebarInset className="h-screen overflow-hidden">
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <span className="font-semibold">Serenity Admin Dashboard</span>
+        </header>
+        <main className="flex-1 overflow-auto p-6 min-w-0">
           {children}
         </main>
-      </div>
+      </SidebarInset>
     </SidebarProvider>
   );
 }

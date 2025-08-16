@@ -39,7 +39,7 @@ export default function LoginPage() {
       { identifier, password },
       {
         onSuccess: () => {
-          router.push("/dashboard");
+          router.push("/");
         },
         onError: (err) => {
           setError(err.message || "Login failed. Please try again.");
