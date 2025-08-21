@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -41,9 +41,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useBookings } from "@/hooks/use-bookings";
-import { GetBookingsParams } from "@/services/bookings";
+import type { GetBookingsParams, Booking } from "@/services/bookings";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { useWorkers } from "@/hooks/use-workers";
+import { useAssignWorkerToCleaningBooking, useAssignWorkerToLaundryBooking, useAssignWorkerToRepairBooking } from "@/hooks/use-bookings";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -92,6 +97,32 @@ export default function BookingsPage() {
 
   const { data, isLoading, error } = useBookings(filters);
 
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [workerSearch, setWorkerSearch] = useState("");
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string>("");
+  const [assignmentDate, setAssignmentDate] = useState<string>("");
+  const [startTime, setStartTime] = useState<string>("");
+  const [endTime, setEndTime] = useState<string>("");
+
+  const { data: workersData, isLoading: isLoadingWorkers } = useWorkers({
+    page: 1,
+    limit: 50,
+    search: workerSearch,
+    // align worker skill with current booking type for relevance
+    skill: filters.booking_type,
+    isAvailable: true,
+    isActive: true,
+  });
+
+  const workers = workersData?.data?.workers || [];
+
+  const assignCleaning = useAssignWorkerToCleaningBooking();
+  const assignLaundry = useAssignWorkerToLaundryBooking();
+  const assignRepair = useAssignWorkerToRepairBooking();
+
+  const isAssigning = assignCleaning.isPending || assignLaundry.isPending || assignRepair.isPending;
+
   const handleSearch = (value: string) => {
     setFilters((prev) => ({ ...prev, search: value, page: 1 }));
   };
@@ -116,6 +147,84 @@ export default function BookingsPage() {
 
   const handlePageChange = (page: number) => {
     setFilters((prev) => ({ ...prev, page }));
+  };
+
+  const openAssignDialog = (booking: Booking) => {
+    setSelectedBooking(booking);
+    // Prefill from first scheduled time when possible
+    const first = booking.cleaning_time?.[0];
+    if (first) {
+      const openDate = new Date(first.opening_time);
+      const closeDate = new Date(first.closing_time);
+      const toDateInput = (d: Date) => d.toISOString().slice(0, 10);
+      const toTimeInput = (d: Date) =>
+        `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      setAssignmentDate(toDateInput(openDate));
+      setStartTime(toTimeInput(openDate));
+      setEndTime(toTimeInput(closeDate));
+    } else {
+      // Fallback to today
+      const now = new Date();
+      const toDateInput = (d: Date) => d.toISOString().slice(0, 10);
+      const toTimeInput = (d: Date) =>
+        `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      setAssignmentDate(toDateInput(now));
+      setStartTime(toTimeInput(now));
+      setEndTime(toTimeInput(new Date(now.getTime() + 60 * 60 * 1000))); // +1h
+    }
+    setSelectedWorkerId("");
+    setWorkerSearch("");
+    setAssignOpen(true);
+  };
+
+  const resetAssignState = () => {
+    setAssignOpen(false);
+    setSelectedBooking(null);
+    setSelectedWorkerId("");
+    setWorkerSearch("");
+    setAssignmentDate("");
+    setStartTime("");
+    setEndTime("");
+  };
+
+  const handleAssign = async () => {
+    if (!selectedBooking) return;
+    if (!selectedWorkerId || !assignmentDate || !startTime || !endTime) {
+      toast.error("Please fill all assignment fields");
+      return;
+    }
+    // Basic time validation
+    const [sh, sm] = startTime.split(":").map(Number);
+    const [eh, em] = endTime.split(":").map(Number);
+    if (eh * 60 + em <= sh * 60 + sm) {
+      toast.error("End time must be after start time");
+      return;
+    }
+
+    const payload = {
+      worker_id: selectedWorkerId,
+      assignment_date: assignmentDate,
+      assignment_time: {
+        start_time: startTime,
+        end_time: endTime,
+      },
+    };
+
+    try {
+      const type = filters.booking_type;
+      if (type === "cleaning") {
+        await assignCleaning.mutateAsync({ bookingId: selectedBooking._id, data: payload });
+      } else if (type === "laundry") {
+        await assignLaundry.mutateAsync({ bookingId: selectedBooking._id, data: payload });
+      } else {
+        await assignRepair.mutateAsync({ bookingId: selectedBooking._id, data: payload });
+      }
+      toast.success("Worker assigned successfully");
+      resetAssignState();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "Failed to assign worker";
+      toast.error(msg);
+    }
   };
 
   if (error) {
@@ -281,7 +390,7 @@ export default function BookingsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {booking.cleaning_time.map((time, index) => (
+                          {booking.cleaning_time.map((time) => (
                             <div key={time._id} className="mb-1">
                               <div className="flex items-center space-x-2">
                                 <Calendar className="h-4 w-4 text-gray-400" />
@@ -323,7 +432,7 @@ export default function BookingsPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem>View Details</DropdownMenuItem>
                               <DropdownMenuItem>Edit Booking</DropdownMenuItem>
-                              <DropdownMenuItem>Assign Worker</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openAssignDialog(booking)}>Assign Worker</DropdownMenuItem>
                               <DropdownMenuItem className="text-red-600">
                                 Cancel Booking
                               </DropdownMenuItem>
@@ -366,6 +475,99 @@ export default function BookingsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={assignOpen} onOpenChange={(o) => { if (!o) resetAssignState(); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Worker</DialogTitle>
+            <DialogDescription>
+              Assign a worker to this {filters.booking_type} booking. Ensure the worker is available and skilled for the task.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedBooking && (
+            <div className="space-y-4">
+              <div className="rounded-md border p-3 text-sm">
+                <div className="font-medium">Booking #{selectedBooking._id.slice(-8)}</div>
+                <div className="text-muted-foreground">
+                  {selectedBooking.user.first_name} {selectedBooking.user.last_name} • {selectedBooking.user.email}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Label htmlFor="worker-search">Search worker</Label>
+                  <div className="mt-1">
+                    <Input
+                      id="worker-search"
+                      placeholder="Search by name, email, or phone"
+                      value={workerSearch}
+                      onChange={(e) => setWorkerSearch(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label>Select worker</Label>
+                  <Select value={selectedWorkerId} onValueChange={setSelectedWorkerId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={isLoadingWorkers ? "Loading workers..." : "Choose a worker"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workers.length === 0 ? (
+                        <SelectItem disabled value="">{isLoadingWorkers ? "Loading..." : "No workers found"}</SelectItem>
+                      ) : (
+                        workers.map((w) => (
+                          <SelectItem key={w.id} value={w.id}>
+                            {w.full_name} • {w.skill} {w.isAvailable ? "(Available)" : ""}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="assignment-date">Assignment date</Label>
+                  <Input
+                    id="assignment-date"
+                    type="date"
+                    value={assignmentDate}
+                    onChange={(e) => setAssignmentDate(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="start-time">Start time</Label>
+                  <Input
+                    id="start-time"
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="end-time">End time</Label>
+                  <Input
+                    id="end-time"
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={resetAssignState} disabled={isAssigning}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAssign} disabled={isAssigning || !selectedWorkerId}>
+                  {isAssigning ? "Assigning..." : "Assign Worker"}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

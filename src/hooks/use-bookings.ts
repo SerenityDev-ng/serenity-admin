@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getBookings, getBooking, createBooking, updateBooking, deleteBooking, GetBookingsParams, Booking } from '@/services/bookings';
+import { getBookings, getBooking, createBooking, updateBooking, deleteBooking, GetBookingsParams, Booking, assignWorkerToCleaningBooking, assignWorkerToLaundryBooking, assignWorkerToRepairBooking, AssignWorkerToBookingRequest } from '@/services/bookings';
 import { AxiosError } from 'axios';
 
 export const useBookings = (params: GetBookingsParams) => {
@@ -89,6 +89,67 @@ export const useDeleteBooking = () => {
     retry: (failureCount, error: unknown) => {
       if (error instanceof AxiosError) {
         // Don't retry on 4xx errors
+        if (error.response && error.response.status >= 400 && error.response.status < 500) {
+          return false;
+        }
+      }
+      return failureCount < 2;
+    },
+  });
+};
+
+// Assign worker hooks
+export const useAssignWorkerToCleaningBooking = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId, data }: { bookingId: string; data: AssignWorkerToBookingRequest }) =>
+      assignWorkerToCleaningBooking(bookingId, data),
+    onSuccess: (_, { bookingId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
+    },
+    retry: (failureCount, error: unknown) => {
+      if (error instanceof AxiosError) {
+        if (error.response && error.response.status >= 400 && error.response.status < 500) {
+          return false;
+        }
+      }
+      return failureCount < 2;
+    },
+  });
+};
+
+export const useAssignWorkerToLaundryBooking = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId, data }: { bookingId: string; data: AssignWorkerToBookingRequest }) =>
+      assignWorkerToLaundryBooking(bookingId, data),
+    onSuccess: (_, { bookingId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
+    },
+    retry: (failureCount, error: unknown) => {
+      if (error instanceof AxiosError) {
+        if (error.response && error.response.status >= 400 && error.response.status < 500) {
+          return false;
+        }
+      }
+      return failureCount < 2;
+    },
+  });
+};
+
+export const useAssignWorkerToRepairBooking = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId, data }: { bookingId: string; data: AssignWorkerToBookingRequest }) =>
+      assignWorkerToRepairBooking(bookingId, data),
+    onSuccess: (_, { bookingId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
+    },
+    retry: (failureCount, error: unknown) => {
+      if (error instanceof AxiosError) {
         if (error.response && error.response.status >= 400 && error.response.status < 500) {
           return false;
         }

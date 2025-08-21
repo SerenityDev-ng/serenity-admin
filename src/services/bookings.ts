@@ -113,3 +113,47 @@ export const deleteBooking = async (
   const response = await api.delete(`/admin/bookings/${id}`);
   return response.data;
 };
+
+// ---------------- Assign Worker to Booking (per service) ----------------
+export interface AssignWorkerToBookingRequest {
+  worker_id: string;
+  assignment_date: string; // YYYY-MM-DD
+  assignment_time: {
+    start_time: string; // HH:MM
+    end_time: string; // HH:MM
+  };
+}
+
+export const assignWorkerToCleaningBooking = async (
+  bookingId: string,
+  data: AssignWorkerToBookingRequest
+): Promise<{ message: string; data: Booking }> => {
+  const response = await api.patch(
+    `/admin/cleaning/bookings/${bookingId}/assign-worker`,
+    data
+  );
+  return response.data;
+};
+
+export const assignWorkerToLaundryBooking = async (
+  bookingId: string,
+  data: AssignWorkerToBookingRequest
+): Promise<{ message: string; data: Booking }> => {
+  const response = await api.patch(
+    `/admin/laundry/bookings/${bookingId}/assign-worker`,
+    data
+  );
+  return response.data;
+};
+
+export const assignWorkerToRepairBooking = async (
+  bookingId: string,
+  data: AssignWorkerToBookingRequest
+): Promise<{ message: string; data: Booking }> => {
+  // Note the endpoint name per spec: "assignworker" without hyphen
+  const response = await api.patch(
+    `/admin/repair_service/bookings/${bookingId}/assignworker`,
+    data
+  );
+  return response.data;
+};
