@@ -108,11 +108,11 @@ export default function BookingsPage() {
   const { data: workersData, isLoading: isLoadingWorkers } = useWorkers({
     page: 1,
     limit: 50,
-    search: workerSearch,
+    ...(workerSearch ? { search: workerSearch } : {}),
     // align worker skill with current booking type for relevance
-    skill: filters.booking_type,
-    isAvailable: true,
-    isActive: true,
+    // skill: filters.booking_type,
+    // isAvailable: true,
+    // isActive: true,
   });
 
   const workers = workersData?.data?.workers || [];
@@ -213,6 +213,7 @@ export default function BookingsPage() {
     try {
       const type = filters.booking_type;
       if (type === "cleaning") {
+        console.log({booking: selectedBooking})
         await assignCleaning.mutateAsync({ bookingId: selectedBooking._id, data: payload });
       } else if (type === "laundry") {
         await assignLaundry.mutateAsync({ bookingId: selectedBooking._id, data: payload });
@@ -374,7 +375,7 @@ export default function BookingsPage() {
                         </TableCell>
                         <TableCell>
                           <Badge className={getFrequencyColor(booking.frequency)}>
-                            {booking.frequency.replace('_', ' ')}
+                            {booking?.frequency?.replace('_', ' ')}
                           </Badge>
                           {booking.subscription_order && (
                             <Badge variant="outline" className="ml-1 text-xs">
@@ -509,20 +510,17 @@ export default function BookingsPage() {
 
                 <div className="md:col-span-2">
                   <Label>Select worker</Label>
-                  <Select value={selectedWorkerId} onValueChange={setSelectedWorkerId}>
+                  <Select value={selectedWorkerId} onValueChange={(value)=>setSelectedWorkerId(value)}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={isLoadingWorkers ? "Loading workers..." : "Choose a worker"} />
+                        <SelectValue placeholder={isLoadingWorkers ? "Loading workers..." : "Choose a worker"} />
                     </SelectTrigger>
                     <SelectContent>
-                      {workers.length === 0 ? (
-                        <SelectItem disabled value="">{isLoadingWorkers ? "Loading..." : "No workers found"}</SelectItem>
-                      ) : (
-                        workers.map((w) => (
-                          <SelectItem key={w.id} value={w.id}>
+                      {workers.map((w) => (
+                          <SelectItem key={w.id} value={w.id?.toString?.() ?? String(w.id)}>
                             {w.full_name} • {w.skill} {w.isAvailable ? "(Available)" : ""}
                           </SelectItem>
                         ))
-                      )}
+                      }
                     </SelectContent>
                   </Select>
                 </div>

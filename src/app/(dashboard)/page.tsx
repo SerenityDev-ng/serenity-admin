@@ -68,9 +68,8 @@ export default function DashboardPage() {
   ];
 
   // Redirect if already authenticated
-  if (isAuthenticated) {
-    router.push("/");
-    return null;
+  if (!isAuthenticated) {
+    router.push("/auth");
   }
 
   return (

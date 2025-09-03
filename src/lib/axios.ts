@@ -4,7 +4,7 @@ import { useAuthStore } from "@/store/auth";
 // Create axios instance
 const api = axios.create({
   baseURL: "https://backend-c2f9.onrender.com/api",
-  timeout: 10000,
+  timeout: 20000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -35,7 +35,7 @@ api.interceptors.response.use(
       useAuthStore.getState().clearAuth();
       // Redirect to login page
       if (typeof window !== "undefined") {
-        window.location.href = "/";
+        window.location.href = "/auth";
       }
     }
     return Promise.reject(error);

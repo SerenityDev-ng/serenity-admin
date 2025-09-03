@@ -111,13 +111,33 @@ export const workersApi = {
     params: GetWorkersParams = {}
   ): Promise<WorkersResponse> => {
     const response = await api.get("/admin/workers", { params });
-    return response.data;
+    // Map backend identifier to `id` to keep UI consistent
+    const raw = response.data as any;
+    const mapped = {
+      ...raw,
+      data: {
+        ...raw?.data,
+        workers: (raw?.data?.workers || []).map((w: any) => ({
+          ...w,
+          id: String(w?.id ?? w?._id),
+        })),
+      },
+    } as WorkersResponse;
+    return mapped;
   },
 
   // Get single worker
   getWorker: async (id: string): Promise<{ message: string; data: Worker }> => {
     const response = await api.get(`/admin/workers/${id}`);
-    return response.data;
+    const raw = response.data as any;
+    const worker = raw?.data;
+    return {
+      ...raw,
+      data: {
+        ...worker,
+        id: String(worker?.id ?? worker?._id),
+      },
+    } as { message: string; data: Worker };
   },
 
   // Create worker
