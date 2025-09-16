@@ -45,7 +45,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   useWithdrawalRequests,
-  useWithdrawalStats,
   useProcessWithdrawalRequest,
 } from "@/hooks/use-withdrawal-requests";
 import { GetWithdrawalRequestsParams } from "@/services/withdrawal-requests";
@@ -111,7 +110,6 @@ export default function WithdrawalRequestsPage() {
   const [isProcessDialogOpen, setIsProcessDialogOpen] = useState(false);
 
   const { data, isLoading, error } = useWithdrawalRequests(filters);
-  const { data: stats } = useWithdrawalStats();
   const processRequestMutation = useProcessWithdrawalRequest();
 
   const handleStatusChange = (value: string) => {
@@ -195,57 +193,63 @@ export default function WithdrawalRequestsPage() {
       </div>
 
       {/* Statistics Cards */}
-      {stats && (
+      {data?.data.summary && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Pending Requests
+                Total Requests
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {data.data.summary.total_requests}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Pending Amount
               </CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.data.total_pending}
+                ₦{data.data.summary.total_amount_pending.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                ${stats.data.pending_amount.toFixed(2)} total
+                {data.data.summary.pending_requests} pending requests
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Approved</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Approved Amount
+              </CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.data.total_approved}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Processed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.data.total_processed}
+                ₦{data.data.summary.total_amount_approved.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                ${stats.data.processed_amount.toFixed(2)} paid
+                {data.data.summary.approved_requests} approved requests
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rejected</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Rejected Requests
+              </CardTitle>
               <XCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.data.total_rejected}
+                {data.data.summary.rejected_requests}
               </div>
             </CardContent>
           </Card>

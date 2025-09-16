@@ -6,6 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Download, Clock, Repeat, Star, Award, TrendingUp } from "lucide-react";
 import { usePeriodicTasksAnalytics, useExportPeriodicTasksData } from "@/hooks/use-analytics";
 import { GetPeriodicTasksParams } from "@/services/analytics";
@@ -14,8 +16,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 
 export default function PeriodicTasksAnalyticsPage() {
+  const today = new Date();
+  const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+  
   const [filters, setFilters] = useState<GetPeriodicTasksParams>({
     period: 'monthly',
+    start_date: thirtyDaysAgo.toISOString().split('T')[0],
+    end_date: today.toISOString().split('T')[0],
   });
 
   const { data, isLoading, error } = usePeriodicTasksAnalytics(filters);
@@ -28,6 +35,14 @@ export default function PeriodicTasksAnalyticsPage() {
   const handleTaskTypeChange = (taskType: string) => {
     const type = taskType === "all" ? undefined : taskType;
     setFilters(prev => ({ ...prev, task_type: type }));
+  };
+
+  const handleStartDateChange = (date: string) => {
+    setFilters(prev => ({ ...prev, start_date: date }));
+  };
+
+  const handleEndDateChange = (date: string) => {
+    setFilters(prev => ({ ...prev, end_date: date }));
   };
 
   const handleExport = async () => {
@@ -155,9 +170,9 @@ export default function PeriodicTasksAnalyticsPage() {
         </CardHeader>
         <CardContent>
           {/* Filters */}
-          <div className="grid gap-4 md:grid-cols-2 mb-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Period</label>
+              <Label htmlFor="period-select">Period</Label>
               <Select value={filters.period} onValueChange={handlePeriodChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select period" />
@@ -170,7 +185,7 @@ export default function PeriodicTasksAnalyticsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Task Type</label>
+              <Label htmlFor="task-type-select">Task Type</Label>
               <Select value={filters.task_type || "all"} onValueChange={handleTaskTypeChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select task type" />
@@ -183,6 +198,24 @@ export default function PeriodicTasksAnalyticsPage() {
                   <SelectItem value="repair">Repair</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="start-date">Start Date</Label>
+              <Input
+                id="start-date"
+                type="date"
+                value={filters.start_date}
+                onChange={(e) => handleStartDateChange(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="end-date">End Date</Label>
+              <Input
+                id="end-date"
+                type="date"
+                value={filters.end_date}
+                onChange={(e) => handleEndDateChange(e.target.value)}
+              />
             </div>
           </div>
 

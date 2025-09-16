@@ -25,6 +25,14 @@ export interface WithdrawalRequest {
 export interface WithdrawalRequestsResponse {
   data: {
     withdrawal_requests: WithdrawalRequest[];
+    summary: {
+      total_requests: number;
+      total_amount_pending: number;
+      total_amount_approved: number;
+      pending_requests: number;
+      approved_requests: number;
+      rejected_requests: number;
+    };
     pagination: {
       currentPage: number;
       totalPages: number;

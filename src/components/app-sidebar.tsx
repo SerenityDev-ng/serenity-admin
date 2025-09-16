@@ -103,26 +103,6 @@ const menuItems = [
       },
     ],
   },
-  {
-    title: "Worker Jobs",
-    items: [
-      {
-        title: "Assigned Jobs",
-        url: "/worker-jobs/assigned",
-        icon: Briefcase,
-      },
-      {
-        title: "Current Job",
-        url: "/worker-jobs/current",
-        icon: Clock,
-      },
-      {
-        title: "Job History",
-        url: "/worker-jobs/history",
-        icon: BarChart3,
-      },
-    ],
-  },
 ];
 
 export function AppSidebar() {

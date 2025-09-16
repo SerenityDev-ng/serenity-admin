@@ -97,7 +97,7 @@ export default function MonthlyTasksAnalyticsPage() {
               {isLoading ? (
                 <Skeleton className="h-8 w-20" />
               ) : (
-                `$${(data?.data?.summary?.total_revenue || 0).toLocaleString()}`
+                `₦${(data?.statistics?.totalRevenue || 0).toLocaleString()}`
               )}
             </div>
           </CardContent>
@@ -112,14 +112,14 @@ export default function MonthlyTasksAnalyticsPage() {
               {isLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
-                data?.data?.summary?.total_tasks || 0
+                data?.statistics?.totalTasks || 0
               )}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Growth</CardTitle>
+            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -128,10 +128,10 @@ export default function MonthlyTasksAnalyticsPage() {
                 <Skeleton className="h-8 w-16" />
               ) : (
                 <>
-                  <span className={getGrowthColor(data?.data?.summary?.average_growth || 0)}>
-                    {(data?.data?.summary?.average_growth || 0).toFixed(1)}%
+                  <span className={getGrowthColor(parseFloat(data?.statistics?.completionRate || "0"))}>
+                    {data?.statistics?.completionRate || "0.00"}%
                   </span>
-                  {getGrowthIcon(data?.data?.summary?.average_growth || 0)}
+                  {getGrowthIcon(parseFloat(data?.statistics?.completionRate || "0"))}
                 </>
               )}
             </div>
@@ -147,7 +147,7 @@ export default function MonthlyTasksAnalyticsPage() {
               {isLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
-                `$${((data?.data?.summary?.total_revenue || 0) / (data?.data?.summary?.total_tasks || 1)).toFixed(2)}`
+                `₦${data?.statistics?.averageTaskValue || "0.00"}`
               )}
             </div>
           </CardContent>
@@ -218,25 +218,25 @@ export default function MonthlyTasksAnalyticsPage() {
                   <TableHead>Completed Tasks</TableHead>
                   <TableHead>Total Revenue</TableHead>
                   <TableHead>Avg Task Value</TableHead>
-                  <TableHead>Growth Rate</TableHead>
+                  <TableHead>Completion Rate</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data?.data?.stats?.map((monthData) => (
-                  <TableRow key={`${monthData.year}-${monthData.month}`}>
+                {data?.monthlyBreakdown?.map((monthData) => (
+                  <TableRow key={monthData.month}>
                     <TableCell>
                       <div className="font-medium">
-                        {monthData.month} {monthData.year}
+                        {monthData.month} {data?.year}
                       </div>
                     </TableCell>
-                    <TableCell>{monthData.total_tasks}</TableCell>
-                    <TableCell>{monthData.completed_tasks}</TableCell>
-                    <TableCell>${monthData.total_revenue.toLocaleString()}</TableCell>
-                    <TableCell>${monthData.average_task_value.toFixed(2)}</TableCell>
+                    <TableCell>{monthData.tasks}</TableCell>
+                    <TableCell>{monthData.completed}</TableCell>
+                    <TableCell>₦{monthData.revenue.toLocaleString()}</TableCell>
+                    <TableCell>₦{monthData.tasks > 0 ? (monthData.revenue / monthData.tasks).toFixed(2) : "0.00"}</TableCell>
                     <TableCell>
-                      <div className={`flex items-center ${getGrowthColor(monthData.growth_rate)}`}>
-                        {getGrowthIcon(monthData.growth_rate)}
-                        <span className="ml-1">{monthData.growth_rate.toFixed(1)}%</span>
+                      <div className={`flex items-center ${getGrowthColor(monthData.tasks > 0 ? (monthData.completed / monthData.tasks) * 100 : 0)}`}>
+                        {getGrowthIcon(monthData.tasks > 0 ? (monthData.completed / monthData.tasks) * 100 : 0)}
+                        <span className="ml-1">{monthData.tasks > 0 ? ((monthData.completed / monthData.tasks) * 100).toFixed(1) : "0.0"}%</span>
                       </div>
                     </TableCell>
                   </TableRow>

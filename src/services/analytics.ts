@@ -14,12 +14,9 @@ export interface Worker {
 
 export interface MonthlyTaskStats {
   month: string;
-  year: number;
-  total_tasks: number;
-  completed_tasks: number;
-  total_revenue: number;
-  average_task_value: number;
-  growth_rate: number;
+  tasks: number;
+  completed: number;
+  revenue: number;
 }
 
 export interface PeriodicTaskStats {
@@ -51,13 +48,40 @@ export interface WorkerTasksResponse {
 }
 
 export interface MonthlyTasksResponse {
-  message: string;
-  data: {
-    stats: MonthlyTaskStats[];
-    summary: {
-      total_revenue: number;
-      total_tasks: number;
-      average_growth: number;
+  year: number;
+  month: number | null;
+  service_type: string;
+  statistics: {
+    totalTasks: number;
+    completedTasks: number;
+    pendingTasks: number;
+    cancelledTasks: number;
+    totalRevenue: number;
+    averageTaskValue: string;
+    completionRate: string;
+  };
+  monthlyBreakdown: MonthlyTaskStats[];
+  serviceBreakdown: {
+    cleaning: {
+      totalTasks: number;
+      completedTasks: number;
+      completionRate: string;
+      totalRevenue: number;
+      averageTaskValue: string;
+    };
+    laundry: {
+      totalTasks: number;
+      completedTasks: number;
+      completionRate: string;
+      totalRevenue: number;
+      averageTaskValue: string;
+    };
+    repair: {
+      totalTasks: number;
+      completedTasks: number;
+      completionRate: string | number;
+      totalRevenue: number;
+      averageTaskValue: string;
     };
   };
 }
@@ -90,6 +114,8 @@ export interface GetMonthlyTasksParams {
 export interface GetPeriodicTasksParams {
   period?: "daily" | "weekly" | "monthly";
   task_type?: string;
+  start_date: string;
+  end_date: string;
 }
 
 // Get worker task analytics

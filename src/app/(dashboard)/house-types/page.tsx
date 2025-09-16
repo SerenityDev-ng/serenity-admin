@@ -26,6 +26,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Plus,
   MoreHorizontal,
@@ -42,12 +53,44 @@ import {
 import { useHouseTypes, useCreateHouseType } from "@/hooks/use-house-types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 export default function HouseTypesPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    house_type: "",
+    house_title: "",
+    rooms: 1,
+    toilets: 1,
+    living_rooms: 1,
+    monthly_price: "",
+    onetime_price: "",
+    isDuplex: false,
+  });
 
   const { data, isLoading, error } = useHouseTypes();
   const createHouseTypeMutation = useCreateHouseType();
+
+  const handleCreateHouseType = async () => {
+    try {
+      await createHouseTypeMutation.mutateAsync(formData);
+      toast.success("House type created successfully!");
+      setIsCreateDialogOpen(false);
+      setFormData({
+        house_type: "",
+        house_title: "",
+        rooms: 1,
+        toilets: 1,
+        living_rooms: 1,
+        monthly_price: "",
+        onetime_price: "",
+        isDuplex: false,
+      });
+    } catch (error) {
+      toast.error("Failed to create house type. Please try again.");
+    }
+  };
 
   if (error) {
     return (
@@ -68,10 +111,128 @@ export default function HouseTypesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">House Types</h1>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add House Type
-        </Button>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add House Type
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Create New House Type</DialogTitle>
+              <DialogDescription>
+                Add a new house type with pricing and room details.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="house_type" className="text-right">
+                  Type
+                </Label>
+                <Input
+                  id="house_type"
+                  value={formData.house_type}
+                  onChange={(e) => setFormData({ ...formData, house_type: e.target.value })}
+                  className="col-span-3"
+                  placeholder="e.g., Apartment"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="house_title" className="text-right">
+                  Title
+                </Label>
+                <Input
+                  id="house_title"
+                  value={formData.house_title}
+                  onChange={(e) => setFormData({ ...formData, house_title: e.target.value })}
+                  className="col-span-3"
+                  placeholder="e.g., 2 Bedroom Apartment"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="rooms" className="text-right">
+                  Rooms
+                </Label>
+                <Input
+                  id="rooms"
+                  type="number"
+                  min="1"
+                  value={formData.rooms}
+                  onChange={(e) => setFormData({ ...formData, rooms: parseInt(e.target.value) || 1 })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="toilets" className="text-right">
+                  Toilets
+                </Label>
+                <Input
+                  id="toilets"
+                  type="number"
+                  min="1"
+                  value={formData.toilets}
+                  onChange={(e) => setFormData({ ...formData, toilets: parseInt(e.target.value) || 1 })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="living_rooms" className="text-right">
+                  Living Rooms
+                </Label>
+                <Input
+                  id="living_rooms"
+                  type="number"
+                  min="1"
+                  value={formData.living_rooms}
+                  onChange={(e) => setFormData({ ...formData, living_rooms: parseInt(e.target.value) || 1 })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="monthly_price" className="text-right">
+                  Monthly Price
+                </Label>
+                <Input
+                  id="monthly_price"
+                  value={formData.monthly_price}
+                  onChange={(e) => setFormData({ ...formData, monthly_price: e.target.value })}
+                  className="col-span-3"
+                  placeholder="15000"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="onetime_price" className="text-right">
+                  One-time Price
+                </Label>
+                <Input
+                  id="onetime_price"
+                  value={formData.onetime_price}
+                  onChange={(e) => setFormData({ ...formData, onetime_price: e.target.value })}
+                  className="col-span-3"
+                  placeholder="500"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isDuplex"
+                  checked={formData.isDuplex}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isDuplex: !!checked })}
+                />
+                <Label htmlFor="isDuplex">Is Duplex</Label>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="submit"
+                onClick={handleCreateHouseType}
+                disabled={createHouseTypeMutation.isPending}
+              >
+                {createHouseTypeMutation.isPending ? "Creating..." : "Create House Type"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>

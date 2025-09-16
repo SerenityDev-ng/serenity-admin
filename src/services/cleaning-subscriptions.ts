@@ -1,22 +1,63 @@
 import api from "@/lib/axios";
 import { AxiosError } from "axios";
 
-export interface CleaningSubscription {
-  id: string;
-  customer_id: string;
-  subscription_type: string;
-  frequency: string;
-  status: "active" | "paused" | "cancelled" | "completed";
+export interface TimeSlot {
+  start_time: string;
+  end_time: string;
+  _id: string;
+}
+
+export interface WeeklySchedule {
+  day: string;
+  time_slots: TimeSlot[];
+  _id: string;
+}
+
+export interface SubscriptionDetails {
   start_date: string;
-  end_date?: string;
-  next_service_date: string;
-  total_amount: number;
-  paid_amount: number;
-  remaining_amount: number;
-  address: object;
-  special_instructions?: string;
-  created_at: string;
-  updated_at: string;
+  end_date: string;
+  weekly_schedule: WeeklySchedule[];
+}
+
+export interface CleaningAddress {
+  state: string;
+  address: string;
+  longitude: string;
+  latitude: string;
+}
+
+export interface User {
+  _id: string;
+  email: string;
+}
+
+export interface CleaningSubscription {
+  subscription: SubscriptionDetails;
+  cleaning_address: CleaningAddress;
+  _id: string;
+  user: User;
+  services: any[]; // You might want to define a more specific interface for services
+  cleaningHouse: string;
+  buildingType: string;
+  basePrice: number;
+  totalPrice: number;
+  multiplier: number;
+  frequency: string;
+  payment_method: string;
+  booking_status: "PENDING" | "PAID" | "ASSIGNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  is_gift: boolean;
+  gift_sender: string | null;
+  notes: string;
+  is_subscription: boolean;
+  subscription_status: "active" | "paused" | "cancelled" | "completed";
+  generated_orders: string[];
+  total_orders_generated: number;
+  orders_completed: number;
+  orders_pending: number;
+  orders_cancelled: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface SubscriptionOrder {
@@ -54,11 +95,10 @@ export interface CleaningSubscriptionsResponse {
 
 export interface SubscriptionDetailsResponse {
   message: string;
-  data: {
-    subscription: CleaningSubscription;
-    orders: SubscriptionOrder[];
-  };
+  data: CleaningSubscription;
 }
+
+
 
 export interface SubscriptionOrdersResponse {
   message: string;
