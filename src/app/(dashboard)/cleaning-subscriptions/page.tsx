@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useWorkers } from "@/hooks/use-workers";
 import {
   Select,
   SelectContent,
@@ -36,6 +37,7 @@ import {
   XCircle,
   Pause,
   Play,
+  Loader2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -48,6 +50,7 @@ import {
   useUpdateSubscriptionStatus,
   useAssignWorkerToSubscription,
   useCleaningSubscriptionStats,
+  useSubscriptionDetails,
 } from "@/hooks/use-cleaning-subscriptions";
 import {
   CleaningSubscription,
@@ -107,14 +110,26 @@ export default function CleaningSubscriptionsPage() {
   const [selectedSubscription, setSelectedSubscription] =
     useState<CleaningSubscription | null>(null);
   const [workerId, setWorkerId] = useState<string>("");
-  const [orderIds, setOrderIds] = useState<string>("");
+  const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+
+  const { data: workersData } = useWorkers();
+  const workers = workersData?.data.workers;
 
   const { data, isLoading, error } = useCleaningSubscriptions(filters);
   const { data: statsData, isLoading: statsLoading } =
     useCleaningSubscriptionStats();
   const updateStatusMutation = useUpdateSubscriptionStatus();
   const assignWorkerMutation = useAssignWorkerToSubscription();
+
+  const {
+    data: subscriptionDetailsData,
+    isPending: subscriptionDetailsLoading,
+  } = useSubscriptionDetails(selectedSubscription?._id || "");
+
+  const subscriptionDetails = subscriptionDetailsData?.data.subscription;
+  const cleaningAddress = subscriptionDetailsData?.data.cleaning_address;
+  const userDetails = subscriptionDetailsData?.data.user;
 
   const handleStatusChange = (value: string) => {
     const status =
@@ -144,28 +159,23 @@ export default function CleaningSubscriptionsPage() {
   };
 
   const handleAssignWorker = async () => {
-    if (!selectedSubscription || !workerId || !orderIds) {
+    if (!selectedSubscription || !workerId) {
       toast.error("Please fill in all required fields");
       return;
     }
 
     try {
-      const orderIdArray = orderIds
-        .split(",")
-        .map((id) => id.trim())
-        .filter((id) => id);
       await assignWorkerMutation.mutateAsync({
         subscriptionId: selectedSubscription._id,
         data: {
           worker_id: workerId,
-          order_ids: orderIdArray,
+          order_ids: [selectedSubscription._id],
         },
       });
       toast.success("Worker assigned successfully");
       setIsAssignDialogOpen(false);
       setSelectedSubscription(null);
       setWorkerId("");
-      setOrderIds("");
     } catch (error) {
       toast.error("Failed to assign worker");
     }
@@ -420,8 +430,14 @@ export default function CleaningSubscriptionsPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>View Details</DropdownMenuItem>
-                              <DropdownMenuItem>View Orders</DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedSubscription(subscription);
+                                  setIsOrderDialogOpen(true);
+                                }}
+                              >
+                                View Order
+                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => {
                                   setSelectedSubscription(subscription);
@@ -523,25 +539,21 @@ export default function CleaningSubscriptionsPage() {
               <Label htmlFor="worker-id" className="text-right">
                 Worker ID
               </Label>
-              <Input
-                id="worker-id"
+              <Select
+                onValueChange={(value) => setWorkerId(value)}
                 value={workerId}
-                onChange={(e) => setWorkerId(e.target.value)}
-                className="col-span-3"
-                placeholder="Enter worker ID"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="order-ids" className="text-right">
-                Order IDs
-              </Label>
-              <Input
-                id="order-ids"
-                value={orderIds}
-                onChange={(e) => setOrderIds(e.target.value)}
-                className="col-span-3"
-                placeholder="Enter order IDs (comma-separated)"
-              />
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select a worker" />
+                </SelectTrigger>
+                <SelectContent>
+                  {workers?.map((worker) => (
+                    <SelectItem key={worker.id} value={worker.id}>
+                      {worker.full_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
@@ -549,11 +561,100 @@ export default function CleaningSubscriptionsPage() {
               onClick={handleAssignWorker}
               disabled={assignWorkerMutation.isPending || !selectedSubscription}
             >
-              {assignWorkerMutation.isPending
-                ? "Assigning..."
-                : "Assign Worker"}
+              {assignWorkerMutation.isPending ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Assign Worker"
+              )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Subscription Details</DialogTitle>
+            <DialogDescription>
+              View the details of the selected cleaning subscription.
+            </DialogDescription>
+          </DialogHeader>
+          {subscriptionDetailsLoading && <Skeleton className="h-9 w-full" />}
+          {selectedSubscription && subscriptionDetails && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Subscription ID:
+                </p>
+                <p className="col-span-3 text-sm">{selectedSubscription._id}</p>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  User Email:
+                </p>
+                <p className="col-span-3 text-sm">{userDetails?.email}</p>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Start Date:
+                </p>
+                <p className="col-span-3 text-sm">
+                  {new Date(subscriptionDetails.start_date).toDateString()}
+                </p>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  End Date:
+                </p>
+                <p className="col-span-3 text-sm">
+                  {new Date(subscriptionDetails.end_date).toDateString()}
+                </p>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Frequency:
+                </p>
+                <p className="col-span-3 text-sm">
+                  {selectedSubscription.frequency}
+                </p>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Total Price:
+                </p>
+                <p className="col-span-3 text-sm">
+                  {selectedSubscription.totalPrice}
+                </p>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Address:
+                </p>
+                <p className="col-span-3 text-sm">
+                  {cleaningAddress?.address}, {cleaningAddress?.state}
+                </p>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Weekly Schedule:
+                </p>
+                <div className="col-span-3 text-sm">
+                  {subscriptionDetails.weekly_schedule.map((schedule) => (
+                    <div key={schedule._id}>
+                      <p>{schedule.day}:</p>
+                      <ul>
+                        {schedule.time_slots.map((slot) => (
+                          <li key={slot._id}>
+                            {slot.start_time} - {slot.end_time}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -34,6 +34,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AddWorker from "./_components/add-worker";
 
 export default function WorkersPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -101,10 +102,7 @@ export default function WorkersPage() {
             Manage all cleaning service workers and their assignments.
           </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Worker
-        </Button>
+        <AddWorker />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

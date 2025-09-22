@@ -30,7 +30,7 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       // Token expired or invalid
       useAuthStore.getState().clearAuth();
       // Redirect to login page

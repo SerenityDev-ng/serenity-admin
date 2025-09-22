@@ -53,6 +53,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useCreateAdsBanner } from "@/hooks/use-ads-banners";
 
 const getStatusColor = (isActive: boolean) => {
   return isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800";
@@ -70,9 +74,83 @@ export default function AdsBannersPage() {
   const [filters, setFilters] = useState<GetAdsBannersParams>();
   const [selectedBanner, setSelectedBanner] = useState<string>("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false); // New state for create dialog
+
+  const [link, setLink] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [isActive, setIsActive] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // New state
+  const [isUploading, setIsUploading] = useState(false); // New state
 
   const { data, isLoading, error } = useAdsBanners(filters);
   const deleteBannerMutation = useDeleteAdsBanner();
+  const createAdsBannerMutation = useCreateAdsBanner();
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const selectedFile = event.target.files[0];
+      setFile(selectedFile);
+      setUploadedImageUrl(null); // Reset previous upload URL
+      setIsUploading(true);
+
+      try {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("upload_preset", "serenityweb");
+        formData.append("folder", "banner");
+
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/duojjwk8l/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Cloudinary upload failed.");
+        }
+
+        const data = await response.json();
+        setUploadedImageUrl(data.secure_url);
+        setLink(data.secure_url); // Set the link from Cloudinary data
+        toast.success("Image uploaded successfully!");
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        toast.error("Failed to upload image.");
+        setFile(null); // Clear selected file on error
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!uploadedImageUrl) { // Use uploadedImageUrl instead of file
+      toast.error("Please upload an image first.");
+      return;
+    }
+
+    try {
+      await createAdsBannerMutation.mutateAsync({
+        image: uploadedImageUrl, // Use the uploaded URL
+        link,
+        is_active: isActive,
+      });
+
+      toast.success("Banner created successfully!");
+      setLink("");
+      setFile(null);
+      setIsActive(false);
+      setUploadedImageUrl(null); // Clear uploaded image URL
+      setIsCreateDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating banner:", error);
+      toast.error("Failed to create banner.");
+    }
+  };
 
   const handleStatusChange = (value: string) => {
     const is_active = value === "all" ? undefined : value === "active";
@@ -116,7 +194,7 @@ export default function AdsBannersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Ads Banners</h1>
-        <Button>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Create Banner
         </Button>
@@ -277,6 +355,57 @@ export default function AdsBannersPage() {
               {deleteBannerMutation.isPending ? "Deleting..." : "Delete Banner"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Banner</DialogTitle>
+            <DialogDescription>
+              Fill in the details to create a new advertisement banner.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="image">Image</Label>
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                required
+                disabled={isUploading}
+               />
+               {isUploading && <p className="text-sm text-gray-500">Uploading image...</p>}
+               {uploadedImageUrl && (
+                 <div className="mt-2">
+                   <p className="text-sm text-gray-500">Image uploaded:</p>
+                   <img src={uploadedImageUrl} alt="Uploaded Preview" className="w-32 h-32 object-cover rounded" />
+                 </div>
+               )}
+             </div>
+             <div className="flex items-center space-x-2">
+              <Checkbox
+                id="is_active"
+                checked={isActive}
+                onCheckedChange={(checked) => setIsActive(checked as boolean)}
+              />
+              <Label htmlFor="is_active">Is Active</Label>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsCreateDialogOpen(false)}
+                type="button"
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createAdsBannerMutation.isPending || isUploading || !uploadedImageUrl}>
+                {createAdsBannerMutation.isPending ? "Creating..." : "Create Banner"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

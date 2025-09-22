@@ -28,8 +28,6 @@ export const useAdsBanners = (params: GetAdsBannersParams = {}) => {
   });
 };
 
-
-
 // Hook to create a new ads banner
 export const useCreateAdsBanner = () => {
   const queryClient = useQueryClient();

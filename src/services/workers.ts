@@ -143,9 +143,9 @@ export const workersApi = {
   // Create worker
   createWorker: async (
     worker: Partial<Worker>
-  ): Promise<{ message: string; data: Worker }> => {
-    const response = await api.post("/admin/workers", worker);
-    return response.data;
+  ): Promise<{ message: string; data: Partial<Worker> }> => {
+    const response = await api.post("/worker/signup", worker);
+    return response.data.data.worker;
   },
 
   // Update worker

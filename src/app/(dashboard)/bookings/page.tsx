@@ -44,11 +44,22 @@ import { useBookings } from "@/hooks/use-bookings";
 import type { GetBookingsParams, Booking } from "@/services/bookings";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useWorkers } from "@/hooks/use-workers";
-import { useAssignWorkerToCleaningBooking, useAssignWorkerToLaundryBooking, useAssignWorkerToRepairBooking } from "@/hooks/use-bookings";
+import {
+  useAssignWorkerToCleaningBooking,
+  useAssignWorkerToLaundryBooking,
+  useAssignWorkerToRepairBooking,
+} from "@/hooks/use-bookings";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -121,7 +132,10 @@ export default function BookingsPage() {
   const assignLaundry = useAssignWorkerToLaundryBooking();
   const assignRepair = useAssignWorkerToRepairBooking();
 
-  const isAssigning = assignCleaning.isPending || assignLaundry.isPending || assignRepair.isPending;
+  const isAssigning =
+    assignCleaning.isPending ||
+    assignLaundry.isPending ||
+    assignRepair.isPending;
 
   const handleSearch = (value: string) => {
     setFilters((prev) => ({ ...prev, search: value, page: 1 }));
@@ -158,7 +172,9 @@ export default function BookingsPage() {
       const closeDate = new Date(first.closing_time);
       const toDateInput = (d: Date) => d.toISOString().slice(0, 10);
       const toTimeInput = (d: Date) =>
-        `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+        `${String(d.getHours()).padStart(2, "0")}:${String(
+          d.getMinutes()
+        ).padStart(2, "0")}`;
       setAssignmentDate(toDateInput(openDate));
       setStartTime(toTimeInput(openDate));
       setEndTime(toTimeInput(closeDate));
@@ -167,7 +183,9 @@ export default function BookingsPage() {
       const now = new Date();
       const toDateInput = (d: Date) => d.toISOString().slice(0, 10);
       const toTimeInput = (d: Date) =>
-        `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+        `${String(d.getHours()).padStart(2, "0")}:${String(
+          d.getMinutes()
+        ).padStart(2, "0")}`;
       setAssignmentDate(toDateInput(now));
       setStartTime(toTimeInput(now));
       setEndTime(toTimeInput(new Date(now.getTime() + 60 * 60 * 1000))); // +1h
@@ -213,17 +231,29 @@ export default function BookingsPage() {
     try {
       const type = filters.booking_type;
       if (type === "cleaning") {
-        console.log({booking: selectedBooking})
-        await assignCleaning.mutateAsync({ bookingId: selectedBooking._id, data: payload });
+        console.log({ booking: selectedBooking });
+        await assignCleaning.mutateAsync({
+          bookingId: selectedBooking._id,
+          data: payload,
+        });
       } else if (type === "laundry") {
-        await assignLaundry.mutateAsync({ bookingId: selectedBooking._id, data: payload });
+        await assignLaundry.mutateAsync({
+          bookingId: selectedBooking._id,
+          data: payload,
+        });
       } else {
-        await assignRepair.mutateAsync({ bookingId: selectedBooking._id, data: payload });
+        await assignRepair.mutateAsync({
+          bookingId: selectedBooking._id,
+          data: payload,
+        });
       }
       toast.success("Worker assigned successfully");
       resetAssignState();
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || "Failed to assign worker";
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to assign worker";
       toast.error(msg);
     }
   };
@@ -247,10 +277,6 @@ export default function BookingsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Bookings</h1>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Booking
-        </Button>
       </div>
 
       <Card>
@@ -287,7 +313,11 @@ export default function BookingsPage() {
               </SelectContent>
             </Select>
             <Select
-              value={filters.subscription_order === undefined ? "all" : filters.subscription_order.toString()}
+              value={
+                filters.subscription_order === undefined
+                  ? "all"
+                  : filters.subscription_order.toString()
+              }
               onValueChange={handleSubscriptionChange}
             >
               <SelectTrigger className="w-[180px]">
@@ -369,13 +399,19 @@ export default function BookingsPage() {
                             <p className="font-medium">
                               {booking.user.first_name} {booking.user.last_name}
                             </p>
-                            <p className="text-sm text-gray-500">{booking.user.email}</p>
-                            <p className="text-sm text-gray-500">{booking.user.phone_number}</p>
+                            <p className="text-sm text-gray-500">
+                              {booking.user.email}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {booking.user.phone_number}
+                            </p>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getFrequencyColor(booking.frequency)}>
-                            {booking?.frequency?.replace('_', ' ')}
+                          <Badge
+                            className={getFrequencyColor(booking.frequency)}
+                          >
+                            {booking?.frequency?.replace("_", " ")}
                           </Badge>
                           {booking.subscription_order && (
                             <Badge variant="outline" className="ml-1 text-xs">
@@ -396,14 +432,27 @@ export default function BookingsPage() {
                               <div className="flex items-center space-x-2">
                                 <Calendar className="h-4 w-4 text-gray-400" />
                                 <span className="text-sm">
-                                  {new Date(time.opening_time).toLocaleDateString()}
+                                  {new Date(
+                                    time.opening_time
+                                  ).toLocaleDateString()}
                                 </span>
                               </div>
                               <div className="flex items-center space-x-2 text-sm text-gray-500">
                                 <Clock className="h-3 w-3" />
                                 <span>
-                                  {new Date(time.opening_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - 
-                                  {new Date(time.closing_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                  {new Date(
+                                    time.opening_time
+                                  ).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}{" "}
+                                  -
+                                  {new Date(
+                                    time.closing_time
+                                  ).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
                                 </span>
                               </div>
                             </div>
@@ -419,7 +468,9 @@ export default function BookingsPage() {
                             <MapPin className="h-4 w-4 text-gray-400" />
                             <div className="text-sm">
                               <p>{booking.cleaning_address.address}</p>
-                              <p className="text-gray-500">{booking.cleaning_address.state}</p>
+                              <p className="text-gray-500">
+                                {booking.cleaning_address.state}
+                              </p>
                             </div>
                           </div>
                         </TableCell>
@@ -433,7 +484,11 @@ export default function BookingsPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem>View Details</DropdownMenuItem>
                               <DropdownMenuItem>Edit Booking</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openAssignDialog(booking)}>Assign Worker</DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => openAssignDialog(booking)}
+                              >
+                                Assign Worker
+                              </DropdownMenuItem>
                               <DropdownMenuItem className="text-red-600">
                                 Cancel Booking
                               </DropdownMenuItem>
@@ -477,21 +532,31 @@ export default function BookingsPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={assignOpen} onOpenChange={(o) => { if (!o) resetAssignState(); }}>
+      <Dialog
+        open={assignOpen}
+        onOpenChange={(o) => {
+          if (!o) resetAssignState();
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Assign Worker</DialogTitle>
             <DialogDescription>
-              Assign a worker to this {filters.booking_type} booking. Ensure the worker is available and skilled for the task.
+              Assign a worker to this {filters.booking_type} booking. Ensure the
+              worker is available and skilled for the task.
             </DialogDescription>
           </DialogHeader>
 
           {selectedBooking && (
             <div className="space-y-4">
               <div className="rounded-md border p-3 text-sm">
-                <div className="font-medium">Booking #{selectedBooking._id.slice(-8)}</div>
+                <div className="font-medium">
+                  Booking #{selectedBooking._id.slice(-8)}
+                </div>
                 <div className="text-muted-foreground">
-                  {selectedBooking.user.first_name} {selectedBooking.user.last_name} • {selectedBooking.user.email}
+                  {selectedBooking.user.first_name}{" "}
+                  {selectedBooking.user.last_name} •{" "}
+                  {selectedBooking.user.email}
                 </div>
               </div>
 
@@ -510,17 +575,29 @@ export default function BookingsPage() {
 
                 <div className="md:col-span-2">
                   <Label>Select worker</Label>
-                  <Select value={selectedWorkerId} onValueChange={(value)=>setSelectedWorkerId(value)}>
+                  <Select
+                    value={selectedWorkerId}
+                    onValueChange={(value) => setSelectedWorkerId(value)}
+                  >
                     <SelectTrigger className="w-full">
-                        <SelectValue placeholder={isLoadingWorkers ? "Loading workers..." : "Choose a worker"} />
+                      <SelectValue
+                        placeholder={
+                          isLoadingWorkers
+                            ? "Loading workers..."
+                            : "Choose a worker"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {workers.map((w) => (
-                          <SelectItem key={w.id} value={w.id?.toString?.() ?? String(w.id)}>
-                            {w.full_name} • {w.skill} {w.isAvailable ? "(Available)" : ""}
-                          </SelectItem>
-                        ))
-                      }
+                        <SelectItem
+                          key={w.id}
+                          value={w.id?.toString?.() ?? String(w.id)}
+                        >
+                          {w.full_name} • {w.skill}{" "}
+                          {w.isAvailable ? "(Available)" : ""}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -555,10 +632,17 @@ export default function BookingsPage() {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={resetAssignState} disabled={isAssigning}>
+                <Button
+                  variant="outline"
+                  onClick={resetAssignState}
+                  disabled={isAssigning}
+                >
                   Cancel
                 </Button>
-                <Button onClick={handleAssign} disabled={isAssigning || !selectedWorkerId}>
+                <Button
+                  onClick={handleAssign}
+                  disabled={isAssigning || !selectedWorkerId}
+                >
                   {isAssigning ? "Assigning..." : "Assign Worker"}
                 </Button>
               </DialogFooter>
