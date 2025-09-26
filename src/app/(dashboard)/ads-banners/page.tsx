@@ -79,63 +79,49 @@ export default function AdsBannersPage() {
   const [link, setLink] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [isActive, setIsActive] = useState(false);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // New state
-  const [isUploading, setIsUploading] = useState(false); // New state
 
   const { data, isLoading, error } = useAdsBanners(filters);
   const deleteBannerMutation = useDeleteAdsBanner();
   const createAdsBannerMutation = useCreateAdsBanner();
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      const selectedFile = event.target.files[0];
-      setFile(selectedFile);
-      setUploadedImageUrl(null); // Reset previous upload URL
-      setIsUploading(true);
-
-      try {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("upload_preset", "serenityweb");
-        formData.append("folder", "banner");
-
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/duojjwk8l/image/upload`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Cloudinary upload failed.");
-        }
-
-        const data = await response.json();
-        setUploadedImageUrl(data.secure_url);
-        setLink(data.secure_url); // Set the link from Cloudinary data
-        toast.success("Image uploaded successfully!");
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        toast.error("Failed to upload image.");
-        setFile(null); // Clear selected file on error
-      } finally {
-        setIsUploading(false);
-      }
+      setFile(event.target.files[0]);
     }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!uploadedImageUrl) { // Use uploadedImageUrl instead of file
-      toast.error("Please upload an image first.");
+    if (!file) {
+      toast.error("Please select an image file.");
       return;
     }
 
     try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "serenityweb");
+      formData.append("folder", "repair-requests");
+
+      // Upload to Cloudinary
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/duojjwk8l/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Cloudinary upload failed.");
+      }
+
+      const data = await response.json();
+      const imageUrl = data.secure_url;
+
       await createAdsBannerMutation.mutateAsync({
-        image: uploadedImageUrl, // Use the uploaded URL
+        image: imageUrl,
         link,
         is_active: isActive,
       });
@@ -144,7 +130,6 @@ export default function AdsBannersPage() {
       setLink("");
       setFile(null);
       setIsActive(false);
-      setUploadedImageUrl(null); // Clear uploaded image URL
       setIsCreateDialogOpen(false);
     } catch (error) {
       console.error("Error creating banner:", error);
@@ -368,6 +353,17 @@ export default function AdsBannersPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="link">Link</Label>
+              <Input
+                type="url"
+                id="link"
+                placeholder="https://example.com/promotion"
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                required
+              />
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="image">Image</Label>
               <Input
                 id="image"
@@ -375,17 +371,9 @@ export default function AdsBannersPage() {
                 accept="image/*"
                 onChange={handleFileChange}
                 required
-                disabled={isUploading}
-               />
-               {isUploading && <p className="text-sm text-gray-500">Uploading image...</p>}
-               {uploadedImageUrl && (
-                 <div className="mt-2">
-                   <p className="text-sm text-gray-500">Image uploaded:</p>
-                   <img src={uploadedImageUrl} alt="Uploaded Preview" className="w-32 h-32 object-cover rounded" />
-                 </div>
-               )}
-             </div>
-             <div className="flex items-center space-x-2">
+              />
+            </div>
+            <div className="flex items-center space-x-2">
               <Checkbox
                 id="is_active"
                 checked={isActive}
@@ -401,7 +389,7 @@ export default function AdsBannersPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createAdsBannerMutation.isPending || isUploading || !uploadedImageUrl}>
+              <Button type="submit" disabled={createAdsBannerMutation.isPending}>
                 {createAdsBannerMutation.isPending ? "Creating..." : "Create Banner"}
               </Button>
             </DialogFooter>

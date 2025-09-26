@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   getWorkerTasksAnalytics,
   getMonthlyTasksAnalytics,
@@ -8,19 +8,23 @@ import {
   exportPeriodicTasksData,
   GetWorkerTasksParams,
   GetMonthlyTasksParams,
-  GetPeriodicTasksParams
-} from '@/services/analytics';
-import { AxiosError } from 'axios';
+  GetPeriodicTasksParams,
+} from "@/services/analytics";
+import { AxiosError } from "axios";
 
 export const useWorkerTasksAnalytics = (params: GetWorkerTasksParams = {}) => {
   return useQuery({
-    queryKey: ['worker-tasks-analytics', params],
+    queryKey: ["worker-tasks-analytics", params],
     queryFn: () => getWorkerTasksAnalytics(params),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error: unknown) => {
       if (error instanceof AxiosError) {
         // Don't retry on 4xx errors
-        if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        if (
+          error.response &&
+          error.response.status >= 400 &&
+          error.response.status < 500
+        ) {
           return false;
         }
       }
@@ -29,15 +33,21 @@ export const useWorkerTasksAnalytics = (params: GetWorkerTasksParams = {}) => {
   });
 };
 
-export const useMonthlyTasksAnalytics = (params: GetMonthlyTasksParams = {}) => {
+export const useMonthlyTasksAnalytics = (
+  params: GetMonthlyTasksParams = {}
+) => {
   return useQuery({
-    queryKey: ['monthly-tasks-analytics', params],
+    queryKey: ["monthly-tasks-analytics", params],
     queryFn: () => getMonthlyTasksAnalytics(params),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error: unknown) => {
       if (error instanceof AxiosError) {
         // Don't retry on 4xx errors
-        if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        if (
+          error.response &&
+          error.response.status >= 400 &&
+          error.response.status < 500
+        ) {
           return false;
         }
       }
@@ -46,15 +56,19 @@ export const useMonthlyTasksAnalytics = (params: GetMonthlyTasksParams = {}) => 
   });
 };
 
-export const usePeriodicTasksAnalytics = (params: GetPeriodicTasksParams = {}) => {
+export const usePeriodicTasksAnalytics = (params: GetPeriodicTasksParams) => {
   return useQuery({
-    queryKey: ['periodic-tasks-analytics', params],
+    queryKey: ["periodic-tasks-analytics", params],
     queryFn: () => getPeriodicTasksAnalytics(params),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error: unknown) => {
       if (error instanceof AxiosError) {
         // Don't retry on 4xx errors
-        if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        if (
+          error.response &&
+          error.response.status >= 400 &&
+          error.response.status < 500
+        ) {
           return false;
         }
       }
@@ -69,7 +83,11 @@ export const useExportWorkerTasksData = () => {
     retry: (failureCount, error: unknown) => {
       if (error instanceof AxiosError) {
         // Don't retry on 4xx errors
-        if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        if (
+          error.response &&
+          error.response.status >= 400 &&
+          error.response.status < 500
+        ) {
           return false;
         }
       }
@@ -84,7 +102,11 @@ export const useExportMonthlyTasksData = () => {
     retry: (failureCount, error: unknown) => {
       if (error instanceof AxiosError) {
         // Don't retry on 4xx errors
-        if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        if (
+          error.response &&
+          error.response.status >= 400 &&
+          error.response.status < 500
+        ) {
           return false;
         }
       }
@@ -99,7 +121,11 @@ export const useExportPeriodicTasksData = () => {
     retry: (failureCount, error: unknown) => {
       if (error instanceof AxiosError) {
         // Don't retry on 4xx errors
-        if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        if (
+          error.response &&
+          error.response.status >= 400 &&
+          error.response.status < 500
+        ) {
           return false;
         }
       }

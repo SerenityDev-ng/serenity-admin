@@ -20,7 +20,6 @@ import { Loader2, Plus } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
-type Props = {};
 const professionalSkills = [
   {
     label: "Housekeeping",
@@ -51,7 +50,7 @@ const professionalSkills = [
     value: "mason",
   },
 ];
-const AddWorker = (props: Props) => {
+const AddWorker = () => {
   const createWorker = useCreateWorker();
   const [worker, setWorker] = useState({
     full_name: "",

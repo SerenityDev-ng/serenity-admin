@@ -140,7 +140,7 @@ export const getMonthlyTasksAnalytics = async (
 
 // Get periodic task analytics
 export const getPeriodicTasksAnalytics = async (
-  params: GetPeriodicTasksParams = {}
+  params: GetPeriodicTasksParams
 ): Promise<PeriodicTasksResponse> => {
   const response = await api.get("/admin/analytics/periodic-tasks", {
     params,
@@ -172,7 +172,7 @@ export const exportMonthlyTasksData = async (
 
 // Export periodic tasks data
 export const exportPeriodicTasksData = async (
-  params: GetPeriodicTasksParams = {}
+  params: GetPeriodicTasksParams
 ): Promise<Blob> => {
   const response = await api.get("/admin/analytics/periodic-tasks/export", {
     params,
