@@ -115,6 +115,7 @@ export default function BookingsPage() {
   const [assignmentDate, setAssignmentDate] = useState<string>("");
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
   const { data: workersData, isLoading: isLoadingWorkers } = useWorkers({
     page: 1,
@@ -165,19 +166,15 @@ export default function BookingsPage() {
 
   const openAssignDialog = (booking: Booking) => {
     setSelectedBooking(booking);
+    setIsAssignDialogOpen(true);
     // Prefill from first scheduled time when possible
     const first = booking.cleaning_time?.[0];
     if (first) {
-      const openDate = new Date(first.opening_time);
-      const closeDate = new Date(first.closing_time);
-      const toDateInput = (d: Date) => d.toISOString().slice(0, 10);
-      const toTimeInput = (d: Date) =>
-        `${String(d.getHours()).padStart(2, "0")}:${String(
-          d.getMinutes()
-        ).padStart(2, "0")}`;
-      setAssignmentDate(toDateInput(openDate));
-      setStartTime(toTimeInput(openDate));
-      setEndTime(toTimeInput(closeDate));
+      const openDate = first.opening_time;
+      const closeDate = first.closing_time;
+      setAssignmentDate(openDate);
+      setStartTime(openDate);
+      setEndTime(closeDate);
     } else {
       // Fallback to today
       const now = new Date();
@@ -427,36 +424,25 @@ export default function BookingsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {booking.cleaning_time.map((time) => (
-                            <div key={time._id} className="mb-1">
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-gray-400" />
-                                <span className="text-sm">
-                                  {new Date(
-                                    time.opening_time
-                                  ).toLocaleDateString()}
-                                </span>
+                          {booking.cleaning_time.map((time) => {
+                            const openDate = time.opening_time;
+                            const closeDate = time.closing_time;
+
+                            return (
+                              <div key={time._id} className="mb-1">
+                                <div className="flex items-center space-x-2">
+                                  <Calendar className="h-4 w-4 text-gray-400" />
+                                  <span className="text-sm">{openDate}</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-sm text-gray-500">
+                                  <Clock className="h-3 w-3" />
+                                  <span>
+                                    {openDate}-{closeDate}
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                                <Clock className="h-3 w-3" />
-                                <span>
-                                  {new Date(
-                                    time.opening_time
-                                  ).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}{" "}
-                                  -
-                                  {new Date(
-                                    time.closing_time
-                                  ).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </TableCell>
                         <TableCell>
                           <span className="font-medium">
@@ -531,6 +517,54 @@ export default function BookingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Assign Worker to Subscription: {selectedSubscription?._id}
+            </DialogTitle>
+            <DialogDescription>
+              Assign a worker to handle orders for this subscription (Customer:
+              {selectedSubscription?.user.email})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="worker-id" className="text-right">
+                Worker ID
+              </Label>
+              <Select
+                onValueChange={(value) => setWorkerId(value)}
+                value={workerId}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select a worker" />
+                </SelectTrigger>
+                <SelectContent>
+                  {workers?.map((worker) => (
+                    <SelectItem key={worker.id} value={worker.id}>
+                      {worker.full_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={handleAssignWorker}
+              disabled={assignWorkerMutation.isPending || !selectedSubscription}
+            >
+              {assignWorkerMutation.isPending ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Assign Worker"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog> */}
 
       <Dialog
         open={assignOpen}

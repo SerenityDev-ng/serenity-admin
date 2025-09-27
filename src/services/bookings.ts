@@ -129,7 +129,7 @@ export const assignWorkerToCleaningBooking = async (
   data: AssignWorkerToBookingRequest
 ): Promise<{ message: string; data: Booking }> => {
   const response = await api.patch(
-    `/admin/cleaning/bookings/${bookingId}/assign-worker`,
+    `cleaning_bookings/${bookingId}/assign-worker`,
     data
   );
   return response.data;
@@ -139,10 +139,7 @@ export const assignWorkerToLaundryBooking = async (
   bookingId: string,
   data: AssignWorkerToBookingRequest
 ): Promise<{ message: string; data: Booking }> => {
-  const response = await api.patch(
-    `/admin/laundry/bookings/${bookingId}/assign-worker`,
-    data
-  );
+  const response = await api.patch(`laundry/${bookingId}/assign-worker`, data);
   return response.data;
 };
 
@@ -152,7 +149,7 @@ export const assignWorkerToRepairBooking = async (
 ): Promise<{ message: string; data: Booking }> => {
   // Note the endpoint name per spec: "assignworker" without hyphen
   const response = await api.patch(
-    `/admin/repair_service/bookings/${bookingId}/assignworker`,
+    `repair_service/${bookingId}/assign-worker`,
     data
   );
   return response.data;

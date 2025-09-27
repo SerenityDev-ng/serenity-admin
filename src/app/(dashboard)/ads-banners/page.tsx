@@ -122,7 +122,7 @@ export default function AdsBannersPage() {
 
       await createAdsBannerMutation.mutateAsync({
         image: imageUrl,
-        link,
+        link: imageUrl,
         is_active: isActive,
       });
 
@@ -352,7 +352,7 @@ export default function AdsBannersPage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
-            <div className="grid w-full max-w-sm items-center gap-1.5">
+            {/* <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="link">Link</Label>
               <Input
                 type="url"
@@ -360,9 +360,9 @@ export default function AdsBannersPage() {
                 placeholder="https://example.com/promotion"
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
-                required
+                
               />
-            </div>
+            </div> */}
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="image">Image</Label>
               <Input
@@ -389,8 +389,13 @@ export default function AdsBannersPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createAdsBannerMutation.isPending}>
-                {createAdsBannerMutation.isPending ? "Creating..." : "Create Banner"}
+              <Button
+                type="submit"
+                disabled={createAdsBannerMutation.isPending}
+              >
+                {createAdsBannerMutation.isPending
+                  ? "Creating..."
+                  : "Create Banner"}
               </Button>
             </DialogFooter>
           </form>
