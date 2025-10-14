@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 
 export interface Booking {
   _id: string;
@@ -128,8 +128,8 @@ export const assignWorkerToCleaningBooking = async (
   bookingId: string,
   data: AssignWorkerToBookingRequest
 ): Promise<{ message: string; data: Booking }> => {
-  const response = await api.patch(
-    `cleaning/bookings/assign-worker?booking_id=${bookingId}`,
+  const response = await axios.patch(
+    `https://backend-c2f9.onrender.com/api/admin/cleaning/bookings/assign-worker?booking_id=${bookingId}`,
     data
   );
   return response.data;
@@ -139,8 +139,8 @@ export const assignWorkerToLaundryBooking = async (
   bookingId: string,
   data: AssignWorkerToBookingRequest
 ): Promise<{ message: string; data: Booking }> => {
-  const response = await api.patch(
-    `laundry/assign-worker?booking_id=${bookingId}`,
+  const response = await axios.patch(
+    `https://backend-c2f9.onrender.com/api/admin/laundry/assign-worker?booking_id=${bookingId}`,
     data
   );
   return response.data;
@@ -151,8 +151,8 @@ export const assignWorkerToRepairBooking = async (
   data: AssignWorkerToBookingRequest
 ): Promise<{ message: string; data: Booking }> => {
   // Note the endpoint name per spec: "assignworker" without hyphen
-  const response = await api.patch(
-    `repair_service/bookings/assign-worker?booking_id=${bookingId}`,
+  const response = await axios.patch(
+    `https://backend-c2f9.onrender.com/api/admin/repair_service/bookings/assign-worker?booking_id=${bookingId}`,
     data
   );
   return response.data;
