@@ -105,6 +105,16 @@ export default function BookingsPage() {
     frequency: undefined,
     subscription_order: undefined,
   });
+  const workerSkills = [
+    "plumber",
+    "electrician",
+    "carpenter",
+    "painter",
+    "mason",
+    "house_keeping",
+    "dry_cleaning",
+    "all",
+  ];
 
   const { data, isLoading, error } = useBookings(filters);
 
@@ -116,11 +126,13 @@ export default function BookingsPage() {
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState("all");
 
   const { data: workersData, isLoading: isLoadingWorkers } = useWorkers({
     page: 1,
     limit: 50,
     ...(workerSearch ? { search: workerSearch } : {}),
+    ...(selectedSkill !== "all" ? { skill: selectedSkill } : {}),
     // align worker skill with current booking type for relevance
     // skill: filters.booking_type,
     // isAvailable: true,
@@ -572,7 +584,7 @@ export default function BookingsPage() {
           if (!o) resetAssignState();
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Assign Worker</DialogTitle>
             <DialogDescription>
@@ -605,6 +617,26 @@ export default function BookingsPage() {
                       onChange={(e) => setWorkerSearch(e.target.value)}
                     />
                   </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label>Select skill</Label>
+                  <Select
+                    value={selectedSkill}
+                    onValueChange={setSelectedSkill}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose a skill" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workerSkills.map((skill) => (
+                        <SelectItem key={skill} value={skill}>
+                          {skill.charAt(0).toUpperCase() +
+                            skill.slice(1).replace("_", " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="md:col-span-2">

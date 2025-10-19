@@ -128,8 +128,8 @@ export const assignWorkerToCleaningBooking = async (
   bookingId: string,
   data: AssignWorkerToBookingRequest
 ): Promise<{ message: string; data: Booking }> => {
-  const response = await axios.patch(
-    `https://backend-c2f9.onrender.com/api/admin/cleaning/bookings/assign-worker?booking_id=${bookingId}`,
+  const response = await api.patch(
+    `/admin/cleaning/bookings/assign-worker?booking_id=${bookingId}`,
     data
   );
   return response.data;
@@ -139,8 +139,8 @@ export const assignWorkerToLaundryBooking = async (
   bookingId: string,
   data: AssignWorkerToBookingRequest
 ): Promise<{ message: string; data: Booking }> => {
-  const response = await axios.patch(
-    `https://backend-c2f9.onrender.com/api/admin/laundry/assign-worker?booking_id=${bookingId}`,
+  const response = await api.patch(
+    `/admin/laundry/assign-worker?booking_id=${bookingId}`,
     data
   );
   return response.data;
@@ -151,8 +151,8 @@ export const assignWorkerToRepairBooking = async (
   data: AssignWorkerToBookingRequest
 ): Promise<{ message: string; data: Booking }> => {
   // Note the endpoint name per spec: "assignworker" without hyphen
-  const response = await axios.patch(
-    `https://backend-c2f9.onrender.com/api/admin/repair_service/bookings/assign-worker?booking_id=${bookingId}`,
+  const response = await api.patch(
+    `/admin/repair_service/bookings/assign-worker?booking_id=${bookingId}`,
     data
   );
   return response.data;
