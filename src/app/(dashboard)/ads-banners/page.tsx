@@ -131,9 +131,9 @@ export default function AdsBannersPage() {
       setFile(null);
       setIsActive(false);
       setIsCreateDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating banner:", error);
-      toast.error("Failed to create banner.");
+      toast.error("Failed to create banner." + error.response.data.error);
     }
   };
 
@@ -150,8 +150,8 @@ export default function AdsBannersPage() {
       toast.success("Banner deleted successfully");
       setIsDeleteDialogOpen(false);
       setSelectedBanner("");
-    } catch (error) {
-      toast.error("Failed to delete banner");
+    } catch (error: any) {
+      toast.error("Failed to delete banner" + " " + error.response.data.error);
     }
   };
 

@@ -1,14 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Download, Calendar, TrendingUp, DollarSign, BarChart3, ArrowUpIcon, ArrowDownIcon } from "lucide-react";
-import { useMonthlyTasksAnalytics, useExportMonthlyTasksData } from "@/hooks/use-analytics";
+import {
+  Download,
+  Calendar,
+  TrendingUp,
+  DollarSign,
+  BarChart3,
+  ArrowUpIcon,
+  ArrowDownIcon,
+} from "lucide-react";
+import {
+  useMonthlyTasksAnalytics,
+  useExportMonthlyTasksData,
+} from "@/hooks/use-analytics";
 import { GetMonthlyTasksParams } from "@/services/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -24,19 +54,19 @@ export default function MonthlyTasksAnalyticsPage() {
   const exportMutation = useExportMonthlyTasksData();
 
   const handleYearChange = (year: string) => {
-    setFilters(prev => ({ ...prev, year: parseInt(year) }));
+    setFilters((prev) => ({ ...prev, year: parseInt(year) }));
   };
 
   const handleMonthsChange = (months: string) => {
-    setFilters(prev => ({ ...prev, months: parseInt(months) }));
+    setFilters((prev) => ({ ...prev, months: parseInt(months) }));
   };
 
   const handleExport = async () => {
     try {
       const blob = await exportMutation.mutateAsync(filters);
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
+      const a = document.createElement("a");
+      a.style.display = "none";
       a.href = url;
       a.download = `monthly-tasks-analytics-${filters.year}.csv`;
       document.body.appendChild(a);
@@ -64,7 +94,9 @@ export default function MonthlyTasksAnalyticsPage() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Monthly Tasks Analytics</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Monthly Tasks Analytics
+          </h1>
         </div>
         <Alert variant="destructive">
           <AlertDescription>
@@ -78,7 +110,9 @@ export default function MonthlyTasksAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Monthly Tasks Analytics</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Monthly Tasks Analytics
+        </h1>
         <Button onClick={handleExport} disabled={exportMutation.isPending}>
           <Download className="mr-2 h-4 w-4" />
           {exportMutation.isPending ? "Exporting..." : "Export Data"}
@@ -119,7 +153,9 @@ export default function MonthlyTasksAnalyticsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Completion Rate
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -128,10 +164,16 @@ export default function MonthlyTasksAnalyticsPage() {
                 <Skeleton className="h-8 w-16" />
               ) : (
                 <>
-                  <span className={getGrowthColor(parseFloat(data?.statistics?.completionRate || "0"))}>
+                  <span
+                    className={getGrowthColor(
+                      parseFloat(data?.statistics?.completionRate || "0")
+                    )}
+                  >
                     {data?.statistics?.completionRate || "0.00"}%
                   </span>
-                  {getGrowthIcon(parseFloat(data?.statistics?.completionRate || "0"))}
+                  {getGrowthIcon(
+                    parseFloat(data?.statistics?.completionRate || "0")
+                  )}
                 </>
               )}
             </div>
@@ -139,7 +181,9 @@ export default function MonthlyTasksAnalyticsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Task Value</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Avg Task Value
+            </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -166,7 +210,10 @@ export default function MonthlyTasksAnalyticsPage() {
           <div className="grid gap-4 md:grid-cols-2 mb-6">
             <div className="space-y-2">
               <Label htmlFor="year-select">Year</Label>
-              <Select value={filters.year?.toString()} onValueChange={handleYearChange}>
+              <Select
+                value={filters.year?.toString()}
+                onValueChange={handleYearChange}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select year" />
                 </SelectTrigger>
@@ -184,7 +231,10 @@ export default function MonthlyTasksAnalyticsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="months-select">Number of Months</Label>
-              <Select value={filters.months?.toString()} onValueChange={handleMonthsChange}>
+              <Select
+                value={filters.months?.toString()}
+                onValueChange={handleMonthsChange}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select months" />
                 </SelectTrigger>
@@ -232,11 +282,34 @@ export default function MonthlyTasksAnalyticsPage() {
                     <TableCell>{monthData.tasks}</TableCell>
                     <TableCell>{monthData.completed}</TableCell>
                     <TableCell>₦{monthData.revenue.toLocaleString()}</TableCell>
-                    <TableCell>₦{monthData.tasks > 0 ? (monthData.revenue / monthData.tasks).toFixed(2) : "0.00"}</TableCell>
                     <TableCell>
-                      <div className={`flex items-center ${getGrowthColor(monthData.tasks > 0 ? (monthData.completed / monthData.tasks) * 100 : 0)}`}>
-                        {getGrowthIcon(monthData.tasks > 0 ? (monthData.completed / monthData.tasks) * 100 : 0)}
-                        <span className="ml-1">{monthData.tasks > 0 ? ((monthData.completed / monthData.tasks) * 100).toFixed(1) : "0.0"}%</span>
+                      ₦
+                      {monthData.tasks > 0
+                        ? (monthData.revenue / monthData.tasks).toFixed(2)
+                        : "0.00"}
+                    </TableCell>
+                    <TableCell>
+                      <div
+                        className={`flex items-center ${getGrowthColor(
+                          monthData.tasks > 0
+                            ? (monthData.completed / monthData.tasks) * 100
+                            : 0
+                        )}`}
+                      >
+                        {getGrowthIcon(
+                          monthData.tasks > 0
+                            ? (monthData.completed / monthData.tasks) * 100
+                            : 0
+                        )}
+                        <span className="ml-1">
+                          {monthData.tasks > 0
+                            ? (
+                                (monthData.completed / monthData.tasks) *
+                                100
+                              ).toFixed(1)
+                            : "0.0"}
+                          %
+                        </span>
                       </div>
                     </TableCell>
                   </TableRow>

@@ -87,8 +87,12 @@ export default function HouseTypesPage() {
         onetime_price: "",
         isDuplex: false,
       });
-    } catch (error) {
-      toast.error("Failed to create house type. Please try again.");
+    } catch (error: any) {
+      toast.error(
+        "Failed to create house type. Please try again." +
+          " " +
+          error.response.data.error
+      );
     }
   };
 
@@ -133,7 +137,9 @@ export default function HouseTypesPage() {
                 <Input
                   id="house_type"
                   value={formData.house_type}
-                  onChange={(e) => setFormData({ ...formData, house_type: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, house_type: e.target.value })
+                  }
                   className="col-span-3"
                   placeholder="e.g., Apartment"
                 />
@@ -145,7 +151,9 @@ export default function HouseTypesPage() {
                 <Input
                   id="house_title"
                   value={formData.house_title}
-                  onChange={(e) => setFormData({ ...formData, house_title: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, house_title: e.target.value })
+                  }
                   className="col-span-3"
                   placeholder="e.g., 2 Bedroom Apartment"
                 />
@@ -159,7 +167,12 @@ export default function HouseTypesPage() {
                   type="number"
                   min="1"
                   value={formData.rooms}
-                  onChange={(e) => setFormData({ ...formData, rooms: parseInt(e.target.value) || 1 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      rooms: parseInt(e.target.value) || 1,
+                    })
+                  }
                   className="col-span-3"
                 />
               </div>
@@ -172,7 +185,12 @@ export default function HouseTypesPage() {
                   type="number"
                   min="1"
                   value={formData.toilets}
-                  onChange={(e) => setFormData({ ...formData, toilets: parseInt(e.target.value) || 1 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      toilets: parseInt(e.target.value) || 1,
+                    })
+                  }
                   className="col-span-3"
                 />
               </div>
@@ -185,7 +203,12 @@ export default function HouseTypesPage() {
                   type="number"
                   min="1"
                   value={formData.living_rooms}
-                  onChange={(e) => setFormData({ ...formData, living_rooms: parseInt(e.target.value) || 1 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      living_rooms: parseInt(e.target.value) || 1,
+                    })
+                  }
                   className="col-span-3"
                 />
               </div>
@@ -196,7 +219,9 @@ export default function HouseTypesPage() {
                 <Input
                   id="monthly_price"
                   value={formData.monthly_price}
-                  onChange={(e) => setFormData({ ...formData, monthly_price: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, monthly_price: e.target.value })
+                  }
                   className="col-span-3"
                   placeholder="15000"
                 />
@@ -208,7 +233,9 @@ export default function HouseTypesPage() {
                 <Input
                   id="onetime_price"
                   value={formData.onetime_price}
-                  onChange={(e) => setFormData({ ...formData, onetime_price: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, onetime_price: e.target.value })
+                  }
                   className="col-span-3"
                   placeholder="500"
                 />
@@ -217,7 +244,9 @@ export default function HouseTypesPage() {
                 <Checkbox
                   id="isDuplex"
                   checked={formData.isDuplex}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isDuplex: !!checked })}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isDuplex: !!checked })
+                  }
                 />
                 <Label htmlFor="isDuplex">Is Duplex</Label>
               </div>
@@ -228,7 +257,9 @@ export default function HouseTypesPage() {
                 onClick={handleCreateHouseType}
                 disabled={createHouseTypeMutation.isPending}
               >
-                {createHouseTypeMutation.isPending ? "Creating..." : "Create House Type"}
+                {createHouseTypeMutation.isPending
+                  ? "Creating..."
+                  : "Create House Type"}
               </Button>
             </DialogFooter>
           </DialogContent>

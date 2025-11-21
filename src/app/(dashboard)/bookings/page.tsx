@@ -60,6 +60,7 @@ import {
   useAssignWorkerToLaundryBooking,
   useAssignWorkerToRepairBooking,
 } from "@/hooks/use-bookings";
+import { format, parseISO } from "date-fns";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -122,9 +123,6 @@ export default function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [workerSearch, setWorkerSearch] = useState("");
   const [selectedWorkerId, setSelectedWorkerId] = useState<string>("");
-  const [assignmentDate, setAssignmentDate] = useState<string>("");
-  const [startTime, setStartTime] = useState<string>("");
-  const [endTime, setEndTime] = useState<string>("");
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState("all");
 
@@ -179,26 +177,6 @@ export default function BookingsPage() {
   const openAssignDialog = (booking: Booking) => {
     setSelectedBooking(booking);
     setIsAssignDialogOpen(true);
-    // Prefill from first scheduled time when possible
-    const first = booking.cleaning_time?.[0];
-    if (first) {
-      const openDate = first.opening_time;
-      const closeDate = first.closing_time;
-      setAssignmentDate(openDate);
-      setStartTime(openDate);
-      setEndTime(closeDate);
-    } else {
-      // Fallback to today
-      const now = new Date();
-      const toDateInput = (d: Date) => d.toISOString().slice(0, 10);
-      const toTimeInput = (d: Date) =>
-        `${String(d.getHours()).padStart(2, "0")}:${String(
-          d.getMinutes()
-        ).padStart(2, "0")}`;
-      setAssignmentDate(toDateInput(now));
-      setStartTime(toTimeInput(now));
-      setEndTime(toTimeInput(new Date(now.getTime() + 60 * 60 * 1000))); // +1h
-    }
     setSelectedWorkerId("");
     setWorkerSearch("");
     setAssignOpen(true);
@@ -209,31 +187,46 @@ export default function BookingsPage() {
     setSelectedBooking(null);
     setSelectedWorkerId("");
     setWorkerSearch("");
-    setAssignmentDate("");
-    setStartTime("");
-    setEndTime("");
+  };
+
+  // Helper function to extract date and time from booking
+  const getBookingSchedule = (booking: Booking | null) => {
+    if (!booking || !booking.cleaning_time?.[0] || !booking.scheduled_date) {
+      return null;
+    }
+
+    const first = booking.cleaning_time[0];
+    const scheduledDate = parseISO(booking.scheduled_date);
+
+    return {
+      assignmentDate: format(scheduledDate, "yyyy-MM-dd"),
+      startTime: first.opening_time,
+      endTime: first.closing_time,
+      formattedDate: format(scheduledDate, "EEEE, MMMM d, yyyy"),
+      formattedStartTime: first.opening_time,
+      formattedEndTime: first.closing_time,
+    };
   };
 
   const handleAssign = async () => {
     if (!selectedBooking) return;
-    if (!selectedWorkerId || !assignmentDate || !startTime || !endTime) {
-      toast.error("Please fill all assignment fields");
+    if (!selectedWorkerId) {
+      toast.error("Please select a worker");
       return;
     }
-    // Basic time validation
-    const [sh, sm] = startTime.split(":").map(Number);
-    const [eh, em] = endTime.split(":").map(Number);
-    if (eh * 60 + em <= sh * 60 + sm) {
-      toast.error("End time must be after start time");
+
+    const schedule = getBookingSchedule(selectedBooking);
+    if (!schedule) {
+      toast.error("Booking schedule information is missing");
       return;
     }
 
     const payload = {
       worker_id: selectedWorkerId,
-      assignment_date: assignmentDate,
+      assignment_date: schedule.assignmentDate,
       assignment_time: {
-        start_time: startTime,
-        end_time: endTime,
+        start_time: schedule.startTime,
+        end_time: schedule.endTime,
       },
     };
 
@@ -260,9 +253,7 @@ export default function BookingsPage() {
       resetAssignState();
     } catch (err: any) {
       const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to assign worker";
+        err?.response?.data?.error || err?.message || "Failed to assign worker";
       toast.error(msg);
     }
   };
@@ -482,11 +473,13 @@ export default function BookingsPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem>View Details</DropdownMenuItem>
                               <DropdownMenuItem>Edit Booking</DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => openAssignDialog(booking)}
-                              >
-                                Assign Worker
-                              </DropdownMenuItem>
+                              {!booking.agent_assigned ? (
+                                <DropdownMenuItem
+                                  onClick={() => openAssignDialog(booking)}
+                                >
+                                  Assign Worker
+                                </DropdownMenuItem>
+                              ) : null}
                               <DropdownMenuItem className="text-red-600">
                                 Cancel Booking
                               </DropdownMenuItem>
@@ -668,33 +661,54 @@ export default function BookingsPage() {
                   </Select>
                 </div>
 
-                <div>
-                  <Label htmlFor="assignment-date">Assignment date</Label>
-                  <Input
-                    id="assignment-date"
-                    type="date"
-                    value={assignmentDate}
-                    onChange={(e) => setAssignmentDate(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="start-time">Start time</Label>
-                  <Input
-                    id="start-time"
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="end-time">End time</Label>
-                  <Input
-                    id="end-time"
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                  />
-                </div>
+                {(() => {
+                  const schedule = getBookingSchedule(selectedBooking);
+                  if (!schedule) {
+                    return (
+                      <div className="md:col-span-2">
+                        <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            No schedule information available
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="md:col-span-2">
+                      <Label className="mb-2 block">Scheduled Time</Label>
+                      <div className="rounded-lg border bg-gradient-to-br from-blue-50 to-indigo-50 p-4 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 rounded-full bg-blue-100 p-2">
+                            <Calendar className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                              Assignment Date
+                            </p>
+                            <p className="text-sm font-semibold text-gray-900 mt-0.5">
+                              {schedule.formattedDate}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 rounded-full bg-indigo-100 p-2">
+                            <Clock className="h-4 w-4 text-indigo-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                              Time Window
+                            </p>
+                            <p className="text-sm font-semibold text-gray-900 mt-0.5">
+                              {schedule.formattedStartTime} -{" "}
+                              {schedule.formattedEndTime}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <DialogFooter>

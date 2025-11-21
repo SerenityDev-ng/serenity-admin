@@ -26,6 +26,7 @@ export interface Booking {
     closing_time: string;
     _id: string;
   }>;
+  scheduled_date?: string;
   cleaning_address: {
     state: string;
     address: string;
@@ -44,6 +45,14 @@ export interface Booking {
   is_gift: boolean;
   createdAt: string;
   updatedAt: string;
+  assignment_date: string;
+  agent_assigned: {
+    _id: string;
+    full_name: string;
+    email: string;
+    phone_number: string;
+    skill: string;
+  }
   __v: number;
 }
 

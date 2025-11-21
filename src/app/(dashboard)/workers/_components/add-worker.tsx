@@ -81,12 +81,8 @@ const AddWorker = () => {
           skill: "",
         });
       },
-      onError: (error: unknown) => {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        } else {
-          toast.error("An unknown error occurred");
-        }
+      onError: (error: any) => {
+        toast.error(error.response.data.error || "Failed to add worker");
       },
     });
   };

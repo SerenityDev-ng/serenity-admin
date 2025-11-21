@@ -153,8 +153,10 @@ export default function CleaningSubscriptionsPage() {
         data: { status: newStatus },
       });
       toast.success(`Subscription status updated to ${newStatus}`);
-    } catch (error) {
-      toast.error("Failed to update subscription status");
+    } catch (error: any) {
+      toast.error(
+        "Failed to update subscription status" + " " + error.response.data.error
+      );
     }
   };
 
@@ -176,8 +178,8 @@ export default function CleaningSubscriptionsPage() {
       setIsAssignDialogOpen(false);
       setSelectedSubscription(null);
       setWorkerId("");
-    } catch (error) {
-      toast.error("Failed to assign worker");
+    } catch (error: any) {
+      toast.error("Failed to assign worker" + " " + error.response.data.error);
     }
   };
 

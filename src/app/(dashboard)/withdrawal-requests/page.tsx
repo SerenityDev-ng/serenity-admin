@@ -149,8 +149,10 @@ export default function WithdrawalRequestsPage() {
       setSelectedRequest("");
       setNotes("");
       setRejectionReason("");
-    } catch (error) {
-      toast.error(`Failed to ${processAction} request`);
+    } catch (error: any) {
+      toast.error(
+        `Failed to ${processAction} request` + " " + error.response.data.error
+      );
     }
   };
 
