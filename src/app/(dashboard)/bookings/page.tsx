@@ -191,20 +191,45 @@ export default function BookingsPage() {
 
   // Helper function to extract date and time from booking
   const getBookingSchedule = (booking: Booking | null) => {
-    if (!booking || !booking.cleaning_time?.[0] || !booking.scheduled_date) {
+    if (!booking || !booking.cleaning_time?.[0]) {
       return null;
     }
 
     const first = booking.cleaning_time[0];
-    const scheduledDate = parseISO(booking.scheduled_date);
+    // As a fallback, try to coin the date from cleaning_time[0].opening_time if scheduled_date is invalid
+    let scheduledDate: Date;
+    try {
+      scheduledDate = parseISO(booking.scheduled_date ?? "");
+      if (isNaN(scheduledDate.getTime())) {
+        throw new Error("Invalid scheduled_date");
+      }
+    } catch {
+      // Fallback: try extracting date from cleaning_time[0].opening_time (expects "YYYY-MM-DDTHH:mm:ss" or similar)
+      const openingTime = booking.cleaning_time?.[0]?.opening_time;
+      if (openingTime) {
+        // Extract just the date part (before T if present)
+        const datePart = openingTime.split("T")?.[0];
+        scheduledDate = parseISO(datePart);
+      } else {
+        scheduledDate = new Date(NaN); // remain invalid
+      }
+    }
 
     return {
       assignmentDate: format(scheduledDate, "yyyy-MM-dd"),
-      startTime: first.opening_time,
-      endTime: first.closing_time,
+      startTime: first.opening_time
+        ? format(parseISO(first.opening_time), "h:mm a")
+        : "",
+      endTime: first.closing_time
+        ? format(parseISO(first.closing_time), "h:mm a")
+        : "",
       formattedDate: format(scheduledDate, "EEEE, MMMM d, yyyy"),
-      formattedStartTime: first.opening_time,
-      formattedEndTime: first.closing_time,
+      formattedStartTime: first.opening_time
+        ? format(parseISO(first.opening_time), "h:mm a")
+        : "",
+      formattedEndTime: first.closing_time
+        ? format(parseISO(first.closing_time), "h:mm a")
+        : "",
     };
   };
 
